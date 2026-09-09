@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="PANDR-5">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f1c16"/>
+      <stop offset="0.55" stop-color="#16140f"/>
+      <stop offset="1" stop-color="#0e0d0b"/>
+    </linearGradient>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="256" cy="86" r="300">
+      <stop offset="0" stop-color="#d9463f" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#d9463f" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="hz" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="46" height="46" fill="#4a3410"/>
+      <rect width="23" height="46" fill="#e9b44c"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g transform="translate(43,142)">
+    <rect x="0"   y="0"   width="90" height="106" rx="18" fill="#837b6b"/>
+    <rect x="112" y="38"  width="90" height="106" rx="18" fill="#bcb3a1"/>
+    <rect x="224" y="76"  width="90" height="106" rx="18" fill="#efe8da"/>
+    <rect x="224" y="197" width="90" height="32"  rx="16" fill="#d9463f"/>
+    <rect x="336" y="114" width="90" height="106" rx="18" fill="url(#hz)"/>
+    <rect x="341" y="119" width="80" height="96"  rx="13" fill="none" stroke="#e9b44c" stroke-width="10"/>
+  </g>
+</svg>

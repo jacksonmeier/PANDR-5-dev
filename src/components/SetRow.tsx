@@ -67,7 +67,7 @@ export function SetRow({
         <select
           value={value.rir === null ? "" : String(value.rir)}
           onChange={(e) => onChange({ ...value, rir: e.target.value === "" ? null : Number(e.target.value) })}
-          className="num h-10 rounded-md border border-line-2 bg-ink px-2 text-sm font-semibold text-bone"
+          className="num h-10 rounded-md border border-line-2 bg-ink px-2 text-base font-semibold text-bone"
           aria-label={`Set ${index + 1} achieved RIR`}
         >
           <option value="">–</option>

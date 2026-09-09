@@ -1,0 +1,87 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# GITHUB_TOKEN permissions needed by the Pages deployment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One Pages deployment at a time. Do NOT cancel in progress: a half-cancelled
+# deploy can leave the live site on an older artifact.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Reads the Pages settings for this repo and exposes base_path ("/PANDR-5-dev").
+      # NOTE: `static_site_generator: next` is intentionally NOT passed. That option
+      # only understands .js/.cjs/.mjs config files
+      # (configure-pages/src/set-pages-config.js: SUPPORTED_FILE_EXTENSIONS) and would
+      # write a second, conflicting next.config.js next to our next.config.ts.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Test
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build static export
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          echo "Building with basePath='${NEXT_PUBLIC_BASE_PATH}'"
+          npm run build
+
+      # Fail loudly here rather than shipping a site whose /_next/* 404s.
+      - name: Assert basePath landed in the HTML
+        env:
+          BASE: ${{ steps.pages.outputs.base_path }}
+        run: |
+          test -f out/index.html
+          test -f out/404.html
+          grep -q "href=\"${BASE}/_next/" out/index.html
+          grep -q "href=\"${BASE}/program/\"" out/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./out
+          # v4 and v5 strip every dotfile from the tarball by default
+          # (--exclude=".[^/]*"). Not strictly needed on the Actions path, which
+          # never runs Jekyll, but it keeps out/.nojekyll in the artifact so the
+          # output is identical to a branch deploy.
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

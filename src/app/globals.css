@@ -20,6 +20,11 @@
   --color-steel: #7fb3e0;
   --color-steel-deep: #17303f;
 
+  /* Faces are self-hosted via @fontsource; see the imports in src/app/layout.tsx.
+     Loaded: Big Shoulders Display 700/800; Instrument Sans 400/500/600/700 + 400 italic;
+     JetBrains Mono 400/600 — latin subset only. The fallback stacks below are what
+     renders during the one first-visit swap. DO NOT change the family names: they must
+     match the @font-face family strings @fontsource emits. */
   --font-display: "Big Shoulders Display", "Impact", "Arial Narrow", sans-serif;
   --font-body: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -64,6 +69,7 @@ body {
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Fine grain so large dark surfaces don't band. */
@@ -75,6 +81,23 @@ body::before {
   z-index: 0;
   opacity: 0.045;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Status-bar scrim. apple-mobile-web-app-status-bar-style is black-translucent, so in
+   standalone the web view extends under the clock and the Dynamic Island. The layout
+   container reserves that height with pt-[env(safe-area-inset-top)]; this paints it so
+   content scrolling upward disappears cleanly instead of sliding under the glyphs.
+   Zero height everywhere except an installed iOS web app. */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--color-ink);
+  z-index: 40;
+  pointer-events: none;
 }
 
 .num {

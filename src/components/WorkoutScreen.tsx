@@ -155,7 +155,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
         </div>
       )}
 
-      <div className="sticky bottom-[4.75rem] z-20 mt-4 sm:bottom-4">
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 mt-4 sm:bottom-4">
         <Card tone="raised" className="flex items-center justify-between gap-4 px-4 py-3 shadow-[0_-12px_40px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col">
             <span className="eyebrow">Progress</span>

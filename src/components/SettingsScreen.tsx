@@ -155,7 +155,7 @@ export function SettingsScreen() {
             onChange={(e) => setPasted(e.target.value)}
             placeholder="Or paste exported JSON here"
             rows={3}
-            className="num mt-3 w-full rounded-md border border-line-2 bg-ink p-2 text-xs text-bone placeholder:text-bone-3"
+            className="num mt-3 w-full rounded-md border border-line-2 bg-ink p-2 text-base text-bone placeholder:text-bone-3"
           />
           <Button tone="ghost" className="mt-2" onClick={() => doImport(pasted)} disabled={!pasted.trim()}>
             Import pasted
