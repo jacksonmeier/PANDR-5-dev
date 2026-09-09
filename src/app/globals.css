@@ -1,11 +1,138 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ink: #0e0d0b;
+  --color-ink-2: #16140f;
+  --color-ink-3: #1f1c16;
+  --color-ink-4: #2a261e;
+  --color-line: #332e25;
+  --color-line-2: #4a4336;
+  --color-bone: #efe8da;
+  --color-bone-2: #bcb3a1;
+  --color-bone-3: #837b6b;
+  --color-oxide: #d9463f;
+  --color-oxide-2: #ff6f62;
+  --color-oxide-deep: #6b1f1b;
+  --color-chalk: #9fd68f;
+  --color-chalk-deep: #1f3a1d;
+  --color-amber: #e9b44c;
+  --color-amber-deep: #4a3410;
+  --color-steel: #7fb3e0;
+  --color-steel-deep: #17303f;
+
+  --font-display: "Big Shoulders Display", "Impact", "Arial Narrow", sans-serif;
+  --font-body: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --animate-rise: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgba(217, 70, 63, 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(217, 70, 63, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(217, 70, 63, 0);
+    }
+  }
+}
+
+html {
+  color-scheme: dark;
+  background: var(--color-ink);
+}
+
 body {
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -200px, rgba(217, 70, 63, 0.08), transparent 60%),
+    var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+/* Fine grain so large dark surfaces don't band. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-bone-3);
+}
+
+.hazard {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-amber-deep) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.reveal {
+  animation: var(--animate-rise);
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+::selection {
+  background: var(--color-oxide);
+  color: var(--color-bone);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-oxide-2);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+  .pulse-ring {
+    animation: none;
+  }
 }
