@@ -63,7 +63,7 @@ const BTN: Record<BtnTone, string> = {
 };
 
 const BTN_BASE =
-  "display inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-base font-bold uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40";
+  "display inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 text-base font-bold uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-40";
 
 export function Button({
   tone = "primary",
