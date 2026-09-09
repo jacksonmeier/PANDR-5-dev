@@ -158,15 +158,15 @@ function SessionCard({
     <Card className="reveal" style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
       <details className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-          <div className="flex items-baseline gap-3">
-            <span className="display text-2xl font-bold uppercase tracking-tight">{day?.label}</span>
-            <span className="num text-sm text-bone-3">{session.date}</span>
+          <div className="flex min-w-0 flex-col">
+            <span className="display truncate text-2xl font-bold uppercase leading-tight tracking-tight">{day?.label}</span>
+            <span className="num text-xs text-bone-3">{session.date}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             {day?.kind === "rest" ? (
               <Tag tone="chalk">rest done</Tag>
             ) : (
-              <span className="num text-xs text-bone-2">
+              <span className="num whitespace-nowrap text-xs text-bone-2">
                 {logged.length} ex · {setCount} sets
               </span>
             )}

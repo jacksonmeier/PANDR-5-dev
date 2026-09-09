@@ -31,7 +31,7 @@ export function DayStrip({
             style={{ animationDelay: `${i * 60}ms` }}
           >
             <span className="num text-[10px] opacity-70">{day.position}</span>
-            <span className="display w-full truncate text-center text-xs font-bold uppercase tracking-wide sm:text-base sm:tracking-wider">
+            <span className="display w-full truncate text-center text-[11px] font-bold uppercase tracking-normal sm:text-base sm:tracking-wider">
               {day.shortLabel}
             </span>
             <span className="text-[9px] uppercase tracking-widest opacity-70">
