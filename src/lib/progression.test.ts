@@ -2,9 +2,15 @@ import { describe, expect, it } from "vitest";
 import { decreaseLoad, increaseLoad, suggestNextLoad } from "./progression";
 import { anchorIndex } from "./rir";
 import { getSlot } from "@/data/program";
+import { DEFAULT_THEME } from "./theme";
 import type { LoggedSet, Session, Settings, Slot } from "./types";
 
-const settings: Settings = { unit: "lb", increasePercent: 2.5, decreasePercent: 2.5 };
+const settings: Settings = {
+  unit: "lb",
+  increasePercent: 2.5,
+  decreasePercent: 2.5,
+  theme: DEFAULT_THEME,
+};
 
 function slotOrThrow(id: string): Slot {
   const s = getSlot(id);
@@ -182,7 +188,7 @@ describe("suggestNextLoad", () => {
   });
 
   it("works in kg with a 1.25 increment", () => {
-    const kg: Settings = { unit: "kg", increasePercent: 2.5, decreasePercent: 2.5 };
+    const kg: Settings = { ...settings, unit: "kg" };
     const s = suggestNextLoad(bench, [session(bench, 60, fullSets(bench, 8, 1, { reps: 8, rir: 0 }))], kg);
     expect(s.load).toBe(61.25);
   });

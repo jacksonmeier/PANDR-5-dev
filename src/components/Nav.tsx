@@ -45,7 +45,7 @@ export function Nav() {
                 className={[
                   "display rounded px-3 py-1.5 text-sm font-bold uppercase tracking-[0.14em] transition-colors",
                   active
-                    ? "bg-oxide text-bone"
+                    ? "bg-oxide text-on-accent"
                     : "text-bone-2 hover:bg-ink-3 hover:text-bone",
                 ].join(" ")}
               >

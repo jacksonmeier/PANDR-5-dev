@@ -44,6 +44,8 @@ export type RirTarget = "3" | "2" | "1" | "0" | "0-1" | "<0";
 
 export type Unit = "lb" | "kg";
 
+import type { Theme } from "./theme";
+
 export interface Exercise {
   id: string;
   name: string;
@@ -111,6 +113,8 @@ export interface Session {
 
 export interface Settings {
   unit: Unit;
+  /** Accent colour, surface tint and light/dark mode. See lib/theme.ts. */
+  theme: Theme;
   /** Percent bump when the anchor set reaches the top of the range. */
   increasePercent: number;
   /** Percent drop when the anchor set misses the floor at 0-1 RIR. */

@@ -6,6 +6,7 @@ import type { Unit } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { INCREMENT } from "@/lib/units";
 import { Button, Card, Eyebrow, PageHeader, Skeleton } from "./ui";
+import { ThemeControls } from "./ThemeControls";
 
 export function SettingsScreen() {
   const hydrated = useStore((s) => s._hydrated);
@@ -86,6 +87,8 @@ export function SettingsScreen() {
       <PageHeader eyebrow="Stored in this browser only" title="Settings" />
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <ThemeControls />
+
         <Card className="reveal p-5">
           <Eyebrow>Units</Eyebrow>
           <div className="mt-2 flex rounded-md border border-line-2 p-0.5" role="radiogroup" aria-label="Unit">
@@ -98,7 +101,7 @@ export function SettingsScreen() {
                 onClick={() => changeUnit(u)}
                 className={[
                   "display h-11 flex-1 rounded text-base font-bold uppercase tracking-[0.14em] transition-colors",
-                  settings.unit === u ? "bg-oxide text-bone" : "text-bone-2 hover:text-bone",
+                  settings.unit === u ? "bg-oxide text-on-accent" : "text-bone-2 hover:text-bone",
                 ].join(" ")}
               >
                 {u}

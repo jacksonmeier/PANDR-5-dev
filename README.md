@@ -11,7 +11,26 @@ A self-contained web tracker for the **PANDR-5 model**: a five-day Push / Pull /
 - **Double progression engine**: implements the post's rules exactly. Anchor set reaches the top of the range, add 2 to 5%. Misses the floor at 0 to 1 RIR, drop 2 to 3%. Inside the range, hold and chase reps. Beyond-failure sets never touch the decision. Progression is judged per day-slot, since the same exercise can carry a different rep range on Push and Upper.
 - **Volume**: effective sets per muscle for the current cycle, using the sheet's fractional credit (primary 1, secondary 0.5, tertiary 0.25), against the sheet's full-cycle totals and the 10 to 20 band.
 - **History**: every session, editable and deletable, plus a per-exercise view.
-- **Settings**: lb or kg with conversion of stored loads, adjustable increase and decrease percentages, JSON export and import, clear all.
+- **Settings**: appearance (below), lb or kg with conversion of stored loads, adjustable increase and decrease percentages, JSON export and import, clear all.
+
+## Theming
+
+Two colours and a mode drive the entire palette:
+
+- **Accent** — buttons, the active tab, the anchor bar. Its hue and chroma are used.
+- **Background tint** — only the hue and saturation are used. The lightness always comes
+  from the mode, which is what keeps it a tint rather than a background colour.
+- **Mode** — light, dark, or follow the device.
+
+The palette is built in OKLCH rather than HSL, so a yellow accent and a blue accent at the
+same ladder position read as equally light. A vivid pick is clamped to the sRGB gamut at the
+accent lightness of *both* modes, so switching to light mode can never silently shift the
+colour. Six presets are included; the default reproduces the original palette exactly.
+
+Implementation: `src/lib/color.ts` (sRGB and OKLCH conversion, gamut clamp), `src/lib/theme.ts`
+(the two picks to four CSS custom properties), and the ladders at the top of
+`src/app/globals.css`. A small blocking script in `<head>` restores the saved theme before
+first paint, so a light-mode user never sees a frame of the dark default.
 - **Research** and **About**: the citations and the author's own explanation, cross-linked.
 
 Everything is stored in the browser's `localStorage`. There is no backend, no account, and no
@@ -31,6 +50,8 @@ Two things worth knowing:
   scoped to the exact origin. Sessions logged in a Safari tab may not carry over into the
   installed app, and changing host or path later starts you empty. Use **Settings → Download
   JSON** before any move.
+- **The home screen icon keeps its own colours.** iOS snapshots it at install time, so
+  changing the theme does not restyle the icon on your home screen.
 - **Updates apply on the next cold launch**, never mid-session. A new build is fetched in the
   background and parks until you fully close and reopen the app, so a deploy can't swap code
   out from under a workout you are logging.
@@ -55,7 +76,7 @@ from any static host over **HTTPS** (service workers and Add to Home Screen both
 
 ```
 src/data/       the sheet, transcribed: exercises + multipliers, program, targets, research, post text
-src/lib/        engines with no React: progression, volume, schedule, units, rir, store
+src/lib/        engines with no React: progression, volume, schedule, units, rir, color, theme, store
 src/components/ screens and UI
 src/app/        Next.js App Router pages (static)
 assets/icon/    SVG icon SOURCES (pure geometry, no text — they must render without fonts)

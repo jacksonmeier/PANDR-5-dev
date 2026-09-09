@@ -4,11 +4,13 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Session, Settings, Unit } from "./types";
 import { convertSessions } from "./units";
+import { DEFAULT_THEME } from "./theme";
 
 export const DEFAULT_SETTINGS: Settings = {
   unit: "lb",
   increasePercent: 2.5,
   decreasePercent: 2.5,
+  theme: DEFAULT_THEME,
 };
 
 export interface ExportFile {
@@ -41,7 +43,7 @@ interface Actions {
 export type Store = State & Actions;
 
 export const STORAGE_KEY = "pandr5";
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
 
 export const useStore = create<Store>()(
   persist(
@@ -107,10 +109,15 @@ export const useStore = create<Store>()(
         useStore.setState({ _hydrated: true });
       },
       migrate: (persisted, version) => {
-        // v1 is the first schema. Future versions transform here.
+        // Every migration so far is additive: fill in new settings keys and never
+        // touch `sessions`, which is the only irreplaceable thing in here.
+        // v1 -> v2 added settings.theme.
         const p = (persisted ?? {}) as Partial<Pick<State, "sessions" | "settings">>;
-        if (version < 1) {
-          return { sessions: p.sessions ?? [], settings: { ...DEFAULT_SETTINGS, ...p.settings } };
+        if (version < STORAGE_VERSION) {
+          return {
+            sessions: p.sessions ?? [],
+            settings: { ...DEFAULT_SETTINGS, ...p.settings },
+          };
         }
         return p;
       },

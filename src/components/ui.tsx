@@ -56,7 +56,7 @@ export function Eyebrow({ children, className = "" }: { children: ReactNode; cla
 type BtnTone = "primary" | "ghost" | "danger" | "subtle";
 
 const BTN: Record<BtnTone, string> = {
-  primary: "bg-oxide text-bone hover:bg-oxide-2 active:bg-oxide-deep",
+  primary: "bg-oxide text-on-accent hover:bg-oxide-hover active:bg-oxide-active",
   ghost: "border border-line-2 text-bone hover:bg-ink-3",
   danger: "border border-oxide/50 text-oxide-2 hover:bg-oxide-deep/40",
   subtle: "text-bone-2 hover:bg-ink-3 hover:text-bone",

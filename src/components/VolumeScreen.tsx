@@ -40,7 +40,7 @@ export function VolumeScreen() {
               onClick={() => setMode(m)}
               className={[
                 "display h-10 rounded px-3 text-sm font-bold uppercase tracking-[0.12em] transition-colors",
-                mode === m ? "bg-oxide text-bone" : "text-bone-2 hover:text-bone",
+                mode === m ? "bg-oxide text-on-accent" : "text-bone-2 hover:text-bone",
               ].join(" ")}
             >
               {m === "cycle" ? "This cycle" : "Full program"}

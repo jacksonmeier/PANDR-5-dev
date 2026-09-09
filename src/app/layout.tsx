@@ -24,6 +24,8 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { StoreHydrator } from "@/components/StoreHydrator";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { PRE_PAINT_SCRIPT } from "@/lib/theme";
 
 // Next applies basePath to routes, but NOT to hand-written metadata hrefs. These three
 // must carry the prefix themselves or they 404 on a subpath deploy, which silently
@@ -58,6 +60,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Default only. ThemeProvider rewrites this to match the chosen theme.
   themeColor: "#0e0d0b",
   width: "device-width",
   initialScale: 1,
@@ -70,9 +73,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Blocking on purpose: restores the saved theme before first paint so a
+            light-mode user never sees a frame of the dark default. */}
+        <script dangerouslySetInnerHTML={{ __html: PRE_PAINT_SCRIPT }} />
+      </head>
       <body className="antialiased">
         <StoreHydrator />
+        <ThemeProvider />
         <ServiceWorkerRegistrar />
         <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-5xl flex-col pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pb-[calc(7rem+env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] sm:pb-12 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))]">
           <Nav />
