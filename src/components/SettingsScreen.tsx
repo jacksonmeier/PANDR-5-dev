@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import type { Unit } from "@/lib/types";
+import { getDay } from "@/data/program";
 import { useStore } from "@/lib/store";
 import { INCREMENT } from "@/lib/units";
 import { Button, Card, Eyebrow, PageHeader, Skeleton } from "./ui";
@@ -12,6 +13,7 @@ export function SettingsScreen() {
   const hydrated = useStore((s) => s._hydrated);
   const settings = useStore((s) => s.settings);
   const sessions = useStore((s) => s.sessions);
+  const active = useStore((s) => s.active);
   const setUnit = useStore((s) => s.setUnit);
   const updateSettings = useStore((s) => s.updateSettings);
   const exportJson = useStore((s) => s.exportJson);
@@ -67,7 +69,11 @@ export function SettingsScreen() {
   }
 
   function clear() {
-    if (window.confirm("Delete every session and reset settings? Export first if you want a copy.")) {
+    if (
+      window.confirm(
+        "Delete every session, including any workout in progress, and reset settings? Export first if you want a copy.",
+      )
+    ) {
       clearAll();
       setMessage("Cleared.");
     }
@@ -136,7 +142,13 @@ export function SettingsScreen() {
 
         <Card className="reveal p-5" style={{ animationDelay: "120ms" }}>
           <Eyebrow>Backup</Eyebrow>
-          <p className="num mt-1 text-sm text-bone-2">{sessions.length} sessions</p>
+          <p className="num mt-1 text-sm text-bone-2">
+            {sessions.length} sessions
+            {active ? ` · 1 in progress (${getDay(active.dayId)?.shortLabel ?? active.dayId})` : ""}
+          </p>
+          <p className="mt-1 text-xs text-bone-3">
+            A workout in progress is exported with the rest, and comes back in progress.
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button onClick={download}>Download JSON</Button>
             <Button tone="ghost" onClick={copy}>

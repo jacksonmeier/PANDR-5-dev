@@ -21,6 +21,7 @@ import "@fontsource/jetbrains-mono/latin-400.css";
 import "@fontsource/jetbrains-mono/latin-600.css";
 
 import "./globals.css";
+import { ActiveSessionBanner } from "@/components/ActiveSessionBanner";
 import { Nav } from "@/components/Nav";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { StoreHydrator } from "@/components/StoreHydrator";
@@ -85,6 +86,7 @@ export default function RootLayout({
         <ServiceWorkerRegistrar />
         <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-5xl flex-col pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pb-[calc(7rem+env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] sm:pb-12 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))]">
           <Nav />
+          <ActiveSessionBanner />
           <main className="flex-1">{children}</main>
           <footer className="mt-16 border-t border-line pt-6 text-xs text-bone-3">
             <p>

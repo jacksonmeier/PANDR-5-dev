@@ -8,10 +8,11 @@ A self-contained web tracker for the **PANDR-5 model**: a five-day Push / Pull /
 
 - **Program**: the full 7-day cycle, 35 exercise slots, with the RIR target per set. The underlined chip is the anchor set; the striped chip is a beyond-failure finisher.
 - **Workout logging**: one load per exercise, reps and achieved RIR per set. The card shows what next session's load will be as you fill in the anchor set.
+- **Sessions in progress**: the first set you log starts a live session. It is written to storage on every keystroke, so you can put the phone away, walk to the next machine, check your volume, close the app, and come back to the same session with a running clock. It is not a workout until you **Mark complete**: until then it stays out of history, volume and the progression engine, and the home screen, the cycle strip and history all point back to it. One at a time, so "in progress" means something; **Discard** throws it away.
 - **Double progression engine**: implements the post's rules exactly. Anchor set reaches the top of the range, add 2 to 5%. Misses the floor at 0 to 1 RIR, drop 2 to 3%. Inside the range, hold and chase reps. Beyond-failure sets never touch the decision. Progression is judged per day-slot, since the same exercise can carry a different rep range on Push and Upper.
 - **Volume**: effective sets per muscle for the current cycle, using the sheet's fractional credit (primary 1, secondary 0.5, tertiary 0.25), against the sheet's full-cycle totals and the 10 to 20 band.
-- **History**: every session, editable and deletable, plus a per-exercise view.
-- **Settings**: appearance (below), lb or kg with conversion of stored loads, adjustable increase and decrease percentages, JSON export and import, clear all.
+- **History**: every completed session, editable and deletable, plus a per-exercise view. Anything still in progress sits at the top, marked as not yet counted.
+- **Settings**: appearance (below), lb or kg with conversion of stored loads (a live session converts too), adjustable increase and decrease percentages, JSON export and import, clear all.
 
 ## Theming
 
@@ -54,14 +55,15 @@ Two things worth knowing:
   changing the theme does not restyle the icon on your home screen.
 - **Updates apply on the next cold launch**, never mid-session. A new build is fetched in the
   background and parks until you fully close and reopen the app, so a deploy can't swap code
-  out from under a workout you are logging.
+  out from under a workout you are logging. A session in progress survives that relaunch: it
+  is in `localStorage`, not in the page.
 
 ## Run it
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # 66 unit tests
+npm test             # 124 unit tests
 npm run lint
 npm run build        # static export to ./out, and generates out/sw.js
 npm run icons        # regenerate public/ rasters from assets/icon/*.svg (needs sharp)
@@ -76,7 +78,7 @@ from any static host over **HTTPS** (service workers and Add to Home Screen both
 
 ```
 src/data/       the sheet, transcribed: exercises + multipliers, program, targets, research, post text
-src/lib/        engines with no React: progression, volume, schedule, units, rir, color, theme, store
+src/lib/        engines with no React: progression, volume, schedule, active, units, rir, color, theme, store
 src/components/ screens and UI
 src/app/        Next.js App Router pages (static)
 assets/icon/    SVG icon SOURCES (pure geometry, no text — they must render without fonts)

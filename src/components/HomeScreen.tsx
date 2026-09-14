@@ -4,9 +4,11 @@ import Link from "next/link";
 import { getDay } from "@/data/program";
 import { getExercise } from "@/data/exercises";
 import { currentCycle, cycleStatus, newSessionId, nextDayId, todayIso } from "@/lib/schedule";
+import { loggedSetCount } from "@/lib/active";
 import { sessionsEffectiveSets } from "@/lib/volume";
 import { useStore } from "@/lib/store";
-import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton } from "./ui";
+import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
+import { Elapsed } from "./Elapsed";
 import { DayStrip } from "./DayStrip";
 import { ActiveRestCard } from "./ActiveRestCard";
 import { GroupOverview } from "./VolumeBars";
@@ -14,6 +16,7 @@ import { GroupOverview } from "./VolumeBars";
 export function HomeScreen() {
   const hydrated = useStore((s) => s._hydrated);
   const sessions = useStore((s) => s.sessions);
+  const active = useStore((s) => s.active);
   const saveSession = useStore((s) => s.saveSession);
 
   if (!hydrated) {
@@ -26,10 +29,14 @@ export function HomeScreen() {
     );
   }
 
-  const status = cycleStatus(sessions);
+  const status = cycleStatus(sessions, active?.dayId ?? null);
   const nextId = nextDayId(sessions);
-  const next = getDay(nextId);
+  // A workout underway outranks the schedule: the one thing you want from this
+  // screen is the way back into it.
+  const heroId = active?.dayId ?? nextId;
+  const next = getDay(heroId);
   if (!next) throw new Error("bad day");
+  const activeSets = active ? loggedSetCount(active.logs) : 0;
   const cycle = currentCycle(sessions);
   const totals = sessionsEffectiveSets(cycle);
   const cycleNumber = Math.max(1, sessions.filter((s) => s.dayId === "push").length);
@@ -49,11 +56,23 @@ export function HomeScreen() {
   return (
     <>
       <PageHeader
-        eyebrow={sessions.length === 0 ? "No sessions yet" : `Cycle ${cycleNumber} · ${cycle.length} of 7 days done`}
+        eyebrow={
+          sessions.length === 0
+            ? active
+              ? "First session in progress"
+              : "No sessions yet"
+            : `Cycle ${cycleNumber} · ${cycle.length} of 7 days done`
+        }
         title={
-          <>
-            Next up: <span className="text-oxide">{next.shortLabel}</span>
-          </>
+          active ? (
+            <>
+              In progress: <span className="text-amber">{next.shortLabel}</span>
+            </>
+          ) : (
+            <>
+              Next up: <span className="text-oxide">{next.shortLabel}</span>
+            </>
+          )
         }
       />
 
@@ -65,12 +84,22 @@ export function HomeScreen() {
       <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         {next.kind === "training" ? (
           <Card tone="accent" className="reveal min-w-0 p-5" style={{ animationDelay: "200ms" }}>
-            <Eyebrow>Day {next.position}</Eyebrow>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Eyebrow>Day {next.position}</Eyebrow>
+              {active && (
+                <Tag tone="amber" className="gap-2">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber" aria-hidden />
+                  Live <Elapsed since={active.startedAt} />
+                </Tag>
+              )}
+            </div>
             <h2 className="display mt-1 text-5xl font-extrabold uppercase leading-[0.9] tracking-tight">
               {next.label}
             </h2>
             <p className="num mt-3 text-sm text-bone-2">
-              {next.slots.length} exercises · {totalSets} sets
+              {active
+                ? `${activeSets} of ${totalSets} sets logged · picks up where you left off`
+                : `${next.slots.length} exercises · ${totalSets} sets`}
             </p>
             <ul className="mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 text-sm text-bone-2 sm:grid-cols-2">
               {next.slots.map((s) => (
@@ -83,7 +112,9 @@ export function HomeScreen() {
               ))}
             </ul>
             <div className="mt-5 flex flex-wrap gap-3">
-              <LinkButton href={`/workout/${next.id}/`}>Start {next.shortLabel}</LinkButton>
+              <LinkButton href={`/workout/${next.id}/`}>
+                {active ? `Resume ${next.shortLabel}` : `Start ${next.shortLabel}`}
+              </LinkButton>
               <LinkButton href="/program/" tone="ghost">
                 Full program
               </LinkButton>

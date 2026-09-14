@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ExerciseLog, Session } from "@/lib/types";
 import { getDay, getSlot } from "@/data/program";
+import { elapsedMs, formatAgo, loggedSetCount } from "@/lib/active";
 import { EXERCISE_LIST, getExercise } from "@/data/exercises";
 import { anchorIndex, formatRir } from "@/lib/rir";
 import { formatLoad } from "@/lib/units";
 import { useStore } from "@/lib/store";
-import { Button, Card, Eyebrow, PageHeader, Skeleton, Tag } from "./ui";
+import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
 
 type Tab = "sessions" | "exercise";
 
@@ -16,6 +17,7 @@ export function HistoryScreen() {
   const hydrated = useStore((s) => s._hydrated);
   const sessions = useStore((s) => s.sessions);
   const settings = useStore((s) => s.settings);
+  const active = useStore((s) => s.active);
   const deleteSession = useStore((s) => s.deleteSession);
   const [tab, setTab] = useState<Tab>("sessions");
   const [exerciseId, setExerciseId] = useState<string>(EXERCISE_LIST[0].id);
@@ -50,14 +52,18 @@ export function HistoryScreen() {
         </div>
       </PageHeader>
 
+      {hydrated && active && tab === "sessions" && <InProgressCard />}
+
       {!hydrated ? (
         <Skeleton className="h-64" />
       ) : sessions.length === 0 ? (
         <Card className="p-6 text-sm text-bone-2">
-          Nothing logged yet.{" "}
-          <Link href="/" className="text-steel hover:underline">
-            Start the next workout.
-          </Link>
+          {active ? "Nothing completed yet. Finish the session above and it lands here." : "Nothing logged yet. "}
+          {!active && (
+            <Link href="/" className="text-steel hover:underline">
+              Start the next workout.
+            </Link>
+          )}
         </Card>
       ) : tab === "sessions" ? (
         <div className="grid gap-3">
@@ -127,6 +133,37 @@ export function HistoryScreen() {
         </>
       )}
     </>
+  );
+}
+
+/**
+ * The workout underway, sitting above the log it has not joined yet. History is
+ * the other place someone looks for "where did my session go".
+ */
+function InProgressCard() {
+  const active = useStore((s) => s.active);
+  if (!active) return null;
+  const day = getDay(active.dayId);
+  const done = loggedSetCount(active.logs);
+  return (
+    <Card tone="accent" className="mb-3 border-amber/60 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-amber" aria-hidden />
+            <Eyebrow>In progress</Eyebrow>
+          </div>
+          <p className="display mt-1 truncate text-2xl font-bold uppercase tracking-tight">
+            {day?.label}
+          </p>
+          <p className="num mt-0.5 text-xs text-bone-3">
+            {active.date} · started {formatAgo(elapsedMs(active))} · {done}{" "}
+            {done === 1 ? "set" : "sets"} logged · not counted until complete
+          </p>
+        </div>
+        <LinkButton href={`/workout/${active.dayId}/`}>Resume</LinkButton>
+      </div>
+    </Card>
   );
 }
 

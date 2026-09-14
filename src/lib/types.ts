@@ -138,3 +138,22 @@ export interface Suggestion {
     anchorRir: number | null;
   };
 }
+
+/**
+ * A workout being logged right now.
+ *
+ * It lives outside `sessions` on purpose: an unfinished workout must not feed
+ * progression, volume, the cycle strip or history. It becomes a `Session` only
+ * when the lifter marks it complete, which is the moment it starts counting.
+ */
+export interface ActiveSession {
+  id: string;
+  dayId: TrainingDayId;
+  /** ISO date, YYYY-MM-DD. The date the session will carry when completed. */
+  date: string;
+  /** Epoch ms of the first logged entry. Drives the running clock. */
+  startedAt: number;
+  /** Epoch ms of the last edit. */
+  updatedAt: number;
+  logs: ExerciseLog[];
+}

@@ -5,8 +5,16 @@ import type { DayStatus } from "@/lib/schedule";
 
 const STATUS: Record<DayStatus, string> = {
   done: "border-chalk/50 bg-chalk-deep/50 text-chalk",
+  active: "border-amber bg-amber-deep/60 text-amber pulse-ring animate-pulse-ring",
   next: "border-oxide bg-oxide-deep/40 text-bone pulse-ring animate-pulse-ring",
   upcoming: "border-line bg-ink-2 text-bone-3",
+};
+
+const CAPTION: Record<DayStatus, string> = {
+  done: "done",
+  active: "live",
+  next: "next",
+  upcoming: "",
 };
 
 export function DayStrip({
@@ -34,9 +42,7 @@ export function DayStrip({
             <span className="display w-full truncate text-center text-[11px] font-bold uppercase tracking-normal sm:text-base sm:tracking-wider">
               {day.shortLabel}
             </span>
-            <span className="text-[9px] uppercase tracking-widest opacity-70">
-              {st === "done" ? "done" : st === "next" ? "next" : ""}
-            </span>
+            <span className="text-[9px] uppercase tracking-widest opacity-70">{CAPTION[st]}</span>
           </div>
         );
         return (

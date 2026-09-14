@@ -1,4 +1,4 @@
-import type { Session, Unit } from "./types";
+import type { ExerciseLog, Session, Unit } from "./types";
 
 /** Smallest practical load step per unit. */
 export const INCREMENT: Record<Unit, number> = { lb: 2.5, kg: 1.25 };
@@ -17,6 +17,19 @@ export function convertLoad(load: number, from: Unit, to: Unit): number {
   return roundToIncrement(raw, INCREMENT[to]);
 }
 
+/** Convert every load in one session's logs. Pure; returns new log objects. */
+export function convertLogs(
+  logs: readonly ExerciseLog[],
+  from: Unit,
+  to: Unit,
+): ExerciseLog[] {
+  if (from === to) return [...logs];
+  return logs.map((l) => ({
+    ...l,
+    load: l.load === null ? null : convertLoad(l.load, from, to),
+  }));
+}
+
 /** Convert every stored load. Pure; returns new session objects. */
 export function convertSessions(
   sessions: readonly Session[],
@@ -24,13 +37,7 @@ export function convertSessions(
   to: Unit,
 ): Session[] {
   if (from === to) return [...sessions];
-  return sessions.map((s) => ({
-    ...s,
-    logs: s.logs.map((l) => ({
-      ...l,
-      load: l.load === null ? null : convertLoad(l.load, from, to),
-    })),
-  }));
+  return sessions.map((s) => ({ ...s, logs: convertLogs(s.logs, from, to) }));
 }
 
 export function formatLoad(load: number | null, unit: Unit): string {

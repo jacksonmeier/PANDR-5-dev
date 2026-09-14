@@ -51,6 +51,20 @@ describe("cycleStatus", () => {
     expect(st.push).toBe("done");
     expect(st.pull).toBe("next");
   });
+  it("marks the day with a workout underway as active", () => {
+    const st = cycleStatus([s("a", "push", 1)], "pull");
+    expect(st.pull).toBe("active");
+    expect(st.push).toBe("done");
+    expect(st.legs).toBe("upcoming");
+  });
+  it("lets active outrank done, since that is where the lifter is", () => {
+    const st = cycleStatus([s("a", "push", 1), s("b", "pull", 2)], "push");
+    expect(st.push).toBe("active");
+    expect(st.legs).toBe("next");
+  });
+  it("is unchanged when nothing is underway", () => {
+    expect(cycleStatus([s("a", "push", 1)], null)).toEqual(cycleStatus([s("a", "push", 1)]));
+  });
 });
 
 describe("todayIso", () => {

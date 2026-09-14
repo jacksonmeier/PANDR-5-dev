@@ -1,7 +1,7 @@
 import type { DayId, Session } from "./types";
 import { DAY_IDS, nextDayId as nextInCycle } from "@/data/program";
 
-export type DayStatus = "done" | "next" | "upcoming";
+export type DayStatus = "done" | "active" | "next" | "upcoming";
 
 export function sortByCreated(sessions: readonly Session[]): Session[] {
   return [...sessions].sort((a, b) => a.createdAt - b.createdAt);
@@ -35,13 +35,23 @@ export function currentCycle(sessions: readonly Session[]): Session[] {
   return sorted.slice(start);
 }
 
-/** Status of every day in the cycle, for the home strip. */
-export function cycleStatus(sessions: readonly Session[]): Record<DayId, DayStatus> {
+/**
+ * Status of every day in the cycle, for the home strip.
+ *
+ * A day with a workout underway reads "active" whatever else it is: that is
+ * where the lifter actually is, and it is the one day the strip should send
+ * them back to.
+ */
+export function cycleStatus(
+  sessions: readonly Session[],
+  activeDayId: DayId | null = null,
+): Record<DayId, DayStatus> {
   const done = new Set(currentCycle(sessions).map((s) => s.dayId));
   const next = nextDayId(sessions);
   const out = {} as Record<DayId, DayStatus>;
   for (const id of DAY_IDS) {
-    out[id] = done.has(id) ? "done" : id === next ? "next" : "upcoming";
+    out[id] =
+      id === activeDayId ? "active" : done.has(id) ? "done" : id === next ? "next" : "upcoming";
   }
   return out;
 }
