@@ -13,7 +13,7 @@ import type { Exercise } from "@/lib/types";
 export const EXERCISES = {
   "bench-press": {
     id: "bench-press",
-    name: "Bench Press",
+    name: "Dumbbell Bench Press",
     multipliers: { chest: 1, anteriorDelts: 0.5, triceps: 0.25 },
     technicalFailure: true,
   },
