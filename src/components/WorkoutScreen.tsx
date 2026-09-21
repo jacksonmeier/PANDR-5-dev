@@ -1,12 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ExerciseLog, Session, TrainingDayId } from "@/lib/types";
 import { getDay } from "@/data/program";
 import { getExercise } from "@/data/exercises";
 import { suggestNextLoad } from "@/lib/progression";
-import { alignLogs, blankSets, elapsedMs, formatAgo, loggedSetCount } from "@/lib/active";
+import {
+  alignLogs,
+  blankSets,
+  elapsedMs,
+  formatAgo,
+  loggedSetCount,
+  orderSlots,
+  reorder,
+} from "@/lib/active";
 import { todayIso } from "@/lib/schedule";
 import { useStore } from "@/lib/store";
 import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
@@ -39,7 +47,17 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   /** Id of the completed session being edited. Null while logging a live one. */
   const [editing, setEditing] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Drafts | null>(null);
+  /**
+   * Slot ids in the order they are being worked through, which is this
+   * session's alone: it is set from the session being logged and never written
+   * back to the program, so the next one starts in program order again.
+   */
+  const [order, setOrder] = useState<string[]>(() => dayDef.slots.map((s) => s.id));
+  /** Slot just moved, so the card can be kept in view under the thumb. */
+  const [moved, setMoved] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const programOrder = useMemo(() => dayDef.slots.map((slot) => slot.id), [dayDef]);
 
   /** The live session, when it is this day's. Editing history never touches it. */
   const live = !editId && active && active.dayId === day ? active : null;
@@ -61,14 +79,20 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     [dayDef, history, settings],
   );
 
+  /**
+   * The logs to store. They go out in the worked order, so the order survives a
+   * reload, and reads back in history as the order it was actually performed.
+   */
   const toLogs = useCallback(
-    (d: Drafts): ExerciseLog[] =>
-      dayDef.slots.map((slot) => ({
-        slotId: slot.id,
-        exerciseId: slot.exerciseId,
-        load: d[slot.id].load,
-        sets: d[slot.id].sets,
-      })),
+    (d: Drafts, ord: readonly string[]): ExerciseLog[] =>
+      orderSlots(dayDef.slots, ord)
+        .filter((slot) => d[slot.id])
+        .map((slot) => ({
+          slotId: slot.id,
+          exerciseId: slot.exerciseId,
+          load: d[slot.id].load,
+          sets: d[slot.id].sets,
+        })),
     [dayDef],
   );
 
@@ -87,7 +111,10 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     if (source) {
       setEditing(resumed ? null : source.id);
       if (source.date !== date) setDate(source.date);
+      // alignLogs hands back the stored order, so a session resumes arranged
+      // the way it was left.
       const logs = alignLogs(dayDef.slots, source.logs);
+      setOrder(logs.map((l) => l.slotId));
       setDrafts(
         Object.fromEntries(logs.map((l) => [l.slotId, { load: l.load, sets: l.sets }])),
       );
@@ -95,6 +122,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     }
 
     setEditing(null);
+    setOrder(dayDef.slots.map((slot) => slot.id));
     setDrafts(
       Object.fromEntries(
         dayDef.slots.map((slot) => [
@@ -105,6 +133,14 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     );
   }, [hydrated, drafts, sessions, settings, day, date, dayDef, editId, live]);
 
+  // A card that jumps past a neighbour taller than the screen would otherwise
+  // leave the lifter looking at a different exercise.
+  useEffect(() => {
+    if (!moved) return;
+    cardRefs.current[moved]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    setMoved(null);
+  }, [moved, order]);
+
   const draftSession = useMemo<Session | null>(() => {
     if (!drafts) return null;
     return {
@@ -112,9 +148,9 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
       dayId: day,
       date,
       createdAt: Number.MAX_SAFE_INTEGER,
-      logs: toLogs(drafts),
+      logs: toLogs(drafts, order),
     };
-  }, [drafts, editing, day, date, toLogs]);
+  }, [drafts, editing, day, date, order, toLogs]);
 
   const previews = useMemo(() => {
     if (!draftSession) return {};
@@ -124,21 +160,48 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     );
   }, [draftSession, history, dayDef, settings]);
 
-  const loggedSets = drafts ? loggedSetCount(toLogs(drafts)) : 0;
+  const loggedSets = drafts ? loggedSetCount(toLogs(drafts, order)) : 0;
   const totalSets = dayDef.slots.reduce((n, s) => n + s.sets, 0);
+  /** The cards to render, in this session's order. */
+  const orderedSlots = useMemo(
+    () => orderSlots(dayDef.slots, order).filter((slot) => !drafts || drafts[slot.id]),
+    [dayDef, order, drafts],
+  );
+  const customOrder = orderedSlots.some((slot, i) => slot.id !== dayDef.slots[i]?.id);
 
   /** Every edit writes through, so closing the tab mid-workout loses nothing. */
   function change(slotId: string, d: Draft) {
     if (!drafts) return;
     const next = { ...drafts, [slotId]: d };
     setDrafts(next);
-    if (!editing) writeActive({ dayId: day, date, logs: toLogs(next) });
+    if (!editing) writeActive({ dayId: day, date, logs: toLogs(next, order) });
+  }
+
+  /**
+   * Reorder for this session only. The program is never touched.
+   *
+   * Unlike a logged set, rearranging does not *start* a session: shuffling the
+   * cards while deciding what to do first should not leave a phantom workout in
+   * progress. Once one is underway the new order is written through with it.
+   */
+  function applyOrder(next: string[], keepInView: string | null) {
+    setOrder(next);
+    setMoved(keepInView);
+    if (live && drafts) writeActive({ dayId: day, date, logs: toLogs(drafts, next) });
+  }
+
+  function move(slotId: string, delta: -1 | 1) {
+    applyOrder(reorder(order, slotId, delta), slotId);
+  }
+
+  function resetOrder() {
+    applyOrder([...programOrder], null);
   }
 
   function changeDate(value: string) {
     setDate(value);
     if (live && drafts) {
-      writeActive({ dayId: day, date: value, logs: toLogs(drafts) });
+      writeActive({ dayId: day, date: value, logs: toLogs(drafts, order) });
       return;
     }
     // Nothing is underway, so another date may already have a session of its
@@ -148,7 +211,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
 
   function complete() {
     if (!drafts) return;
-    const logs = toLogs(drafts);
+    const logs = toLogs(drafts, order);
     if (
       loggedSetCount(logs) === 0 &&
       !window.confirm("Nothing logged yet. Mark this session complete anyway?")
@@ -240,18 +303,37 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
         </div>
       ) : (
         <div className="grid gap-3">
-          {dayDef.slots.map((slot, i) => (
-            <ExerciseCard
+          {customOrder && (
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-line bg-ink-2 px-4 py-2.5">
+              <p className="text-xs text-bone-2">
+                Reordered for this session. The next {shortLabel} starts in program order.
+              </p>
+              <Button tone="subtle" onClick={resetOrder} className="min-h-9 px-3 text-sm">
+                Program order
+              </Button>
+            </div>
+          )}
+          {orderedSlots.map((slot, i) => (
+            <div
               key={slot.id}
-              index={i}
-              slot={slot}
-              exercise={getExercise(slot.exerciseId)}
-              draft={drafts[slot.id]}
-              onChange={(d) => change(slot.id, d)}
-              suggestion={suggestions[slot.id]}
-              preview={previews[slot.id] ?? null}
-              unit={settings.unit}
-            />
+              ref={(el) => {
+                cardRefs.current[slot.id] = el;
+              }}
+            >
+              <ExerciseCard
+                index={i}
+                slot={slot}
+                exercise={getExercise(slot.exerciseId)}
+                draft={drafts[slot.id]}
+                onChange={(d) => change(slot.id, d)}
+                onMove={(delta) => move(slot.id, delta)}
+                isFirst={i === 0}
+                isLast={i === orderedSlots.length - 1}
+                suggestion={suggestions[slot.id]}
+                preview={previews[slot.id] ?? null}
+                unit={settings.unit}
+              />
+            </div>
           ))}
         </div>
       )}

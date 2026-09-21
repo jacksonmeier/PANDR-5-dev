@@ -16,6 +16,43 @@ export function blankSets(slot: Slot): LoggedSet[] {
 }
 
 /**
+ * `slots`, arranged by `order`.
+ *
+ * Every slot comes back exactly once. Ids in `order` that no longer exist are
+ * dropped and slots `order` says nothing about keep their program position at
+ * the end, so an order written against an older program still arranges what it
+ * can instead of being thrown away.
+ */
+export function orderSlots(slots: readonly Slot[], order: readonly string[]): Slot[] {
+  const byId = new Map(slots.map((s) => [s.id, s]));
+  const out: Slot[] = [];
+  const seen = new Set<string>();
+  for (const id of order) {
+    const slot = byId.get(id);
+    if (slot && !seen.has(id)) {
+      out.push(slot);
+      seen.add(id);
+    }
+  }
+  for (const slot of slots) if (!seen.has(slot.id)) out.push(slot);
+  return out;
+}
+
+/**
+ * Move one slot `delta` places within `order`. Out of range is a no-op, so the
+ * first exercise's "up" and the last one's "down" do nothing rather than wrap.
+ */
+export function reorder(order: readonly string[], id: string, delta: number): string[] {
+  const from = order.indexOf(id);
+  const to = from + delta;
+  if (from < 0 || to < 0 || to >= order.length) return [...order];
+  const next = [...order];
+  next.splice(from, 1);
+  next.splice(to, 0, id);
+  return next;
+}
+
+/**
  * Logs for `slots`, taking whatever `logs` already has for each slot and
  * filling the rest in blank.
  *
@@ -23,9 +60,17 @@ export function blankSets(slot: Slot): LoggedSet[] {
  * or an exercise under a session that was written against an older version, so
  * the slot list is always the authority on shape and the stored log only
  * supplies values.
+ *
+ * The stored log also supplies the *order*: the array is the order the lifter
+ * put the exercises in, so a session resumes, and reads back in history, in the
+ * order it was actually performed. Slots the log has never seen stay in program
+ * order at the end.
  */
 export function alignLogs(slots: readonly Slot[], logs: readonly ExerciseLog[]): ExerciseLog[] {
-  return slots.map((slot) => {
+  return orderSlots(
+    slots,
+    logs.map((l) => l.slotId),
+  ).map((slot) => {
     const found = logs.find((l) => l.slotId === slot.id);
     const blanks = blankSets(slot);
     return {

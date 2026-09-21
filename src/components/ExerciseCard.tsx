@@ -20,6 +20,9 @@ export function ExerciseCard({
   exercise,
   draft,
   onChange,
+  onMove,
+  isFirst,
+  isLast,
   suggestion,
   preview,
   unit,
@@ -29,6 +32,10 @@ export function ExerciseCard({
   exercise: Exercise;
   draft: Draft;
   onChange: (d: Draft) => void;
+  /** Move this exercise one place earlier (-1) or later (1) in this session. */
+  onMove: (delta: -1 | 1) => void;
+  isFirst: boolean;
+  isLast: boolean;
   suggestion: Suggestion;
   /** What next session would look like if this draft were saved now. */
   preview: Suggestion | null;
@@ -53,6 +60,20 @@ export function ExerciseCard({
             </h3>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-bone-2">
+            <span className="flex items-center gap-1">
+              <MoveButton
+                label={`Move ${exercise.name} earlier`}
+                glyph="↑"
+                disabled={isFirst}
+                onClick={() => onMove(-1)}
+              />
+              <MoveButton
+                label={`Move ${exercise.name} later`}
+                glyph="↓"
+                disabled={isLast}
+                onClick={() => onMove(1)}
+              />
+            </span>
             <span className="num">
               {slot.sets} × {slot.repRange.lo}–{slot.repRange.hi}
             </span>
@@ -118,5 +139,31 @@ export function ExerciseCard({
         </div>
       </div>
     </Card>
+  );
+}
+
+/** One half of the reorder control. Sized for a thumb, not a mouse. */
+function MoveButton({
+  label,
+  glyph,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  glyph: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-line-2 text-base text-bone-2 transition-colors hover:bg-ink-3 hover:text-bone disabled:cursor-not-allowed disabled:border-line disabled:text-bone-3 disabled:opacity-40"
+    >
+      <span aria-hidden>{glyph}</span>
+    </button>
   );
 }

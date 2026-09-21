@@ -97,6 +97,19 @@ describe("completeActive", () => {
     expect(store().sessions).toEqual([]);
   });
 
+  it("keeps the order the exercises were worked in", () => {
+    const reordered: ExerciseLog[] = [
+      { slotId: "push:lateral-raise", exerciseId: "lateral-raise", load: 20, sets: [] },
+      { slotId: "push:bench-press", exerciseId: "bench-press", load: 135, sets: [] },
+    ];
+    store().writeActive({ dayId: "push", date: "2026-09-13", logs: reordered });
+    store().completeActive();
+    expect(store().sessions[0].logs.map((l) => l.slotId)).toEqual([
+      "push:lateral-raise",
+      "push:bench-press",
+    ]);
+  });
+
   it("completes only once, so a double tap cannot duplicate the session", () => {
     store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8]) });
     store().completeActive();

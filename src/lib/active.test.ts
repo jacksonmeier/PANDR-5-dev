@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   alignLogs,
   blankSets,
+  orderSlots,
+  reorder,
   completedSession,
   elapsedMs,
   formatAgo,
@@ -69,10 +71,65 @@ describe("alignLogs", () => {
     expect(out.some((l) => l.slotId === "push:gone")).toBe(false);
   });
 
-  it("ignores the order the logs were stored in", () => {
+  it("keeps the order the logs were stored in, which is the order they were performed", () => {
     const out = alignLogs(slots, [log("push:b", 40, [12, 11, 10]), log("push:a", 100, [10, 9])]);
-    expect(out[0].slotId).toBe("push:a");
-    expect(out[1].load).toBe(40);
+    expect(out.map((l) => l.slotId)).toEqual(["push:b", "push:a"]);
+    expect(out[0].load).toBe(40);
+  });
+
+  it("parks a slot the stored log never saw at the end, in program order", () => {
+    const three = [...slots, slot("push:c", 1)];
+    const out = alignLogs(three, [log("push:b", 40, [12, 11, 10])]);
+    expect(out.map((l) => l.slotId)).toEqual(["push:b", "push:a", "push:c"]);
+  });
+});
+
+describe("orderSlots", () => {
+  const slots = [slot("push:a", 2), slot("push:b", 3), slot("push:c", 1)];
+
+  it("arranges the slots as asked", () => {
+    expect(orderSlots(slots, ["push:c", "push:a", "push:b"]).map((s) => s.id)).toEqual([
+      "push:c",
+      "push:a",
+      "push:b",
+    ]);
+  });
+
+  it("returns every slot exactly once, whatever the order says", () => {
+    const out = orderSlots(slots, ["push:b", "push:b", "push:gone"]);
+    expect(out.map((s) => s.id)).toEqual(["push:b", "push:a", "push:c"]);
+  });
+
+  it("is the program order when the order is empty", () => {
+    expect(orderSlots(slots, []).map((s) => s.id)).toEqual(["push:a", "push:b", "push:c"]);
+  });
+});
+
+describe("reorder", () => {
+  const order = ["a", "b", "c"];
+
+  it("moves one place either way", () => {
+    expect(reorder(order, "c", -1)).toEqual(["a", "c", "b"]);
+    expect(reorder(order, "a", 1)).toEqual(["b", "a", "c"]);
+  });
+
+  it("moves further than one place", () => {
+    expect(reorder(order, "c", -2)).toEqual(["c", "a", "b"]);
+  });
+
+  it("does nothing at the ends rather than wrapping", () => {
+    expect(reorder(order, "a", -1)).toEqual(order);
+    expect(reorder(order, "c", 1)).toEqual(order);
+  });
+
+  it("does nothing for an id it does not hold", () => {
+    expect(reorder(order, "zzz", 1)).toEqual(order);
+  });
+
+  it("never mutates the array it was given", () => {
+    const input = [...order];
+    reorder(input, "a", 1);
+    expect(input).toEqual(order);
   });
 });
 

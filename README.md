@@ -9,6 +9,7 @@ A self-contained web tracker for the **PANDR-5 model**: a five-day Push / Pull /
 - **Program**: the full 7-day cycle, 35 exercise slots, with the RIR target per set. The underlined chip is the anchor set; the striped chip is a beyond-failure finisher.
 - **Workout logging**: one load per exercise, reps and achieved RIR per set. The card shows what next session's load will be as you fill in the anchor set.
 - **Sessions in progress**: the first set you log starts a live session. It is written to storage on every keystroke, so you can put the phone away, walk to the next machine, check your volume, close the app, and come back to the same session with a running clock. It is not a workout until you **Mark complete**: until then it stays out of history, volume and the progression engine, and the home screen, the cycle strip and history all point back to it. One at a time, so "in progress" means something; **Discard** throws it away.
+- **Reorder for one workout**: the arrows on each card move an exercise up or down, for when the machine you wanted is taken. The order belongs to that session alone. It survives leaving the page and a reload, and history shows the session in the order you actually performed it, but the next time that day comes round it starts in program order again. **Program order** puts it back.
 - **Double progression engine**: implements the post's rules exactly. Anchor set reaches the top of the range, add 2 to 5%. Misses the floor at 0 to 1 RIR, drop 2 to 3%. Inside the range, hold and chase reps. Beyond-failure sets never touch the decision. Progression is judged per day-slot, since the same exercise can carry a different rep range on Push and Upper.
 - **Volume**: effective sets per muscle for the current cycle, using the sheet's fractional credit (primary 1, secondary 0.5, tertiary 0.25), against the sheet's full-cycle totals and the 10 to 20 band.
 - **History**: every completed session, editable and deletable, plus a per-exercise view. Anything still in progress sits at the top, marked as not yet counted.
@@ -63,7 +64,7 @@ Two things worth knowing:
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # 124 unit tests
+npm test             # 134 unit tests
 npm run lint
 npm run build        # static export to ./out, and generates out/sw.js
 npm run icons        # regenerate public/ rasters from assets/icon/*.svg (needs sharp)
