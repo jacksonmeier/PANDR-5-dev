@@ -52,6 +52,12 @@ interface Actions {
    * edit can never silently replace a workout in progress.
    */
   writeActive: (input: ActiveInput) => void;
+  /**
+   * Start the rest clock at `at`, or clear it. Separate from writeActive
+   * because rest begins when a set ends, not when any field is touched.
+   * Ignored when nothing is live.
+   */
+  setRestFrom: (at: number | null) => void;
   /** Throws the live session away without recording it. */
   discardActive: () => void;
   /**
@@ -101,6 +107,9 @@ export const useStore = create<Store>()(
             active: { id: newSessionId(now), dayId, date, startedAt: now, updatedAt: now, logs },
           };
         }),
+
+      setRestFrom: (at) =>
+        set((s) => (s.active ? { active: { ...s.active, restFrom: at ?? undefined } } : s)),
 
       discardActive: () => set({ active: null }),
 
@@ -229,6 +238,7 @@ function validActive(x: unknown): ActiveSession | null {
     date: a.date,
     startedAt: a.startedAt,
     updatedAt: typeof a.updatedAt === "number" ? a.updatedAt : a.startedAt,
+    ...(typeof a.restFrom === "number" ? { restFrom: a.restFrom } : {}),
     logs: a.logs as ExerciseLog[],
   };
 }

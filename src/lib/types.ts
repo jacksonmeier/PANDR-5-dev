@@ -155,5 +155,11 @@ export interface ActiveSession {
   startedAt: number;
   /** Epoch ms of the last edit. */
   updatedAt: number;
+  /**
+   * Epoch ms the current rest began: the last set logged, or the last manual
+   * restart. Absent before the first set. Stored rather than held in the page
+   * so the rest clock keeps counting while the phone is in a pocket.
+   */
+  restFrom?: number;
   logs: ExerciseLog[];
 }

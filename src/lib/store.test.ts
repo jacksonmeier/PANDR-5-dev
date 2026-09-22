@@ -118,6 +118,35 @@ describe("completeActive", () => {
   });
 });
 
+describe("setRestFrom", () => {
+  it("starts and clears the rest clock", () => {
+    store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8]) });
+    store().setRestFrom(1_700_000_000_000);
+    expect(store().active!.restFrom).toBe(1_700_000_000_000);
+    store().setRestFrom(null);
+    expect(store().active!.restFrom).toBeUndefined();
+  });
+
+  it("survives later edits, so resting is not cut short by touching a load", () => {
+    store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8]) });
+    store().setRestFrom(1_700_000_000_000);
+    store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(140, [8]) });
+    expect(store().active!.restFrom).toBe(1_700_000_000_000);
+  });
+
+  it("does nothing when no session is live", () => {
+    store().setRestFrom(1_700_000_000_000);
+    expect(store().active).toBeNull();
+  });
+
+  it("does not follow the session into the log", () => {
+    store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8]) });
+    store().setRestFrom(1_700_000_000_000);
+    const saved = store().completeActive();
+    expect(saved && "restFrom" in saved).toBe(false);
+  });
+});
+
 describe("discardActive", () => {
   it("throws the session away without recording it", () => {
     store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8]) });
@@ -151,6 +180,7 @@ describe("clearAll", () => {
 describe("export and import", () => {
   it("round-trips a session in progress", () => {
     store().writeActive({ dayId: "push", date: "2026-09-13", logs: logs(135, [8, 7]) });
+    store().setRestFrom(1_700_000_000_000);
     const text = store().exportJson();
     expect(JSON.parse(text).version).toBe(STORAGE_VERSION);
 
@@ -158,6 +188,7 @@ describe("export and import", () => {
     expect(store().importJson(text)).toBeNull();
     expect(store().active?.dayId).toBe("push");
     expect(store().active?.logs[0].sets[1].reps).toBe(7);
+    expect(store().active?.restFrom).toBe(1_700_000_000_000);
   });
 
   it("reads an older export, which has no live session, as nothing in progress", () => {

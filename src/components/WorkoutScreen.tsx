@@ -37,6 +37,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   const writeActive = useStore((s) => s.writeActive);
   const discardActive = useStore((s) => s.discardActive);
   const completeActive = useStore((s) => s.completeActive);
+  const setRestFrom = useStore((s) => s.setRestFrom);
 
   const dayDef = getDay(day);
   if (!dayDef) throw new Error(`Unknown day ${day}`);
@@ -172,9 +173,15 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   /** Every edit writes through, so closing the tab mid-workout loses nothing. */
   function change(slotId: string, d: Draft) {
     if (!drafts) return;
+    const before = drafts[slotId];
     const next = { ...drafts, [slotId]: d };
     setDrafts(next);
-    if (!editing) writeActive({ dayId: day, date, logs: toLogs(next, order) });
+    if (editing) return;
+    writeActive({ dayId: day, date, logs: toLogs(next, order) });
+    // Rest begins when a set ends. Only a set that had no reps until now counts,
+    // so correcting a number you already logged does not wipe the clock.
+    const setLogged = d.sets.some((s, i) => s.reps !== null && before.sets[i]?.reps === null);
+    if (setLogged) setRestFrom(Date.now());
   }
 
   /**
@@ -343,19 +350,35 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
           tone="raised"
           className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 shadow-[0_-12px_40px_rgba(0,0,0,0.5)]"
         >
-          <div className="flex flex-col">
-            <span className="eyebrow">Progress</span>
-            <span className="num text-lg font-semibold">
-              {loggedSets}
-              <span className="text-bone-3">/{totalSets} sets</span>
-            </span>
-            <span className="text-[11px] text-bone-3">
-              {editing
-                ? "Changes apply when you update."
-                : live
-                  ? "Saved as you go. Leave and come back."
-                  : "Log a set to start the session."}
-            </span>
+          <div className="flex min-w-0 flex-1 basis-64 items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="eyebrow">Progress</span>
+              <span className="num text-lg font-semibold">
+                {loggedSets}
+                <span className="text-bone-3">/{totalSets} sets</span>
+              </span>
+              <span className="text-[11px] text-bone-3">
+                {editing
+                  ? "Changes apply when you update."
+                  : live
+                    ? "Saved as you go. Leave and come back."
+                    : "Log a set to start the session."}
+              </span>
+            </div>
+            {live && (
+              <button
+                type="button"
+                onClick={() => setRestFrom(Date.now())}
+                aria-label="Restart the rest timer"
+                title="Restart the rest timer"
+                className="flex shrink-0 flex-col items-end rounded-md border border-line-2 px-3 py-1.5 text-right transition-colors hover:bg-ink-3 active:bg-ink-4"
+              >
+                <span className="eyebrow">Rest ↻</span>
+                <span className="num text-2xl font-semibold leading-tight text-bone">
+                  {live.restFrom ? <Elapsed since={live.restFrom} /> : "–:––"}
+                </span>
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {live && (
