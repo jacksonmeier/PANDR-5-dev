@@ -60,7 +60,11 @@ export interface RepRange {
   hi: number;
 }
 
-/** One exercise as prescribed on one day. Progression is keyed by slot id. */
+/**
+ * One exercise as prescribed on one day. Logs are stored by slot id, but
+ * progression follows the exercise across every day it appears on: the slot
+ * only says how it is prescribed here.
+ */
 export interface Slot {
   /** `${dayId}:${exerciseId}` */
   id: string;
