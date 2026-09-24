@@ -101,6 +101,11 @@ export interface ExerciseLog {
   load: number | null;
   /** Length equals the slot's prescribed set count. */
   sets: LoggedSet[];
+  /**
+   * Deliberately not done this session. A skipped exercise counts for nothing:
+   * not progress, not volume, not progression. Absent means not skipped.
+   */
+  skipped?: true;
 }
 
 export interface Session {

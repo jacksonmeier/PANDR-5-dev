@@ -123,3 +123,21 @@ describe("a logged Push day", () => {
     expect(getSlot("push:bench-press")?.repRange).toEqual({ lo: 5, hi: 8 });
   });
 });
+
+describe("a skipped exercise", () => {
+  it("adds no volume, even for sets logged before it was skipped", () => {
+    const log: ExerciseLog = {
+      slotId: "push:lateral-raise",
+      exerciseId: "lateral-raise",
+      load: 20,
+      sets: [
+        { reps: 12, rir: 1 },
+        { reps: 11, rir: 0 },
+        { reps: null, rir: -1 },
+      ],
+      skipped: true,
+    };
+    expect(performedSets(log)).toBe(0);
+    expect(Object.values(effectiveSets([log])).every((v) => v === 0)).toBe(true);
+  });
+});

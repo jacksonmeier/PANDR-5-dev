@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getDay } from "@/data/program";
 import { getExercise } from "@/data/exercises";
 import { currentCycle, cycleStatus, newSessionId, nextDayId, todayIso } from "@/lib/schedule";
-import { loggedSetCount } from "@/lib/active";
+import { loggedSetCount, plannedSetCount } from "@/lib/active";
 import { sessionsEffectiveSets } from "@/lib/volume";
 import { useStore } from "@/lib/store";
 import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
@@ -98,7 +98,7 @@ export function HomeScreen() {
             </h2>
             <p className="num mt-3 text-sm text-bone-2">
               {active
-                ? `${activeSets} of ${totalSets} sets logged · picks up where you left off`
+                ? `${activeSets} of ${plannedSetCount(next.slots, active.logs)} sets logged · picks up where you left off`
                 : `${next.slots.length} exercises · ${totalSets} sets`}
             </p>
             <ul className="mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 text-sm text-bone-2 sm:grid-cols-2">

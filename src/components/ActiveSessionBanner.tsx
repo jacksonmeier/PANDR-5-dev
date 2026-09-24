@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getDay } from "@/data/program";
-import { loggedSetCount } from "@/lib/active";
+import { loggedSetCount, plannedSetCount } from "@/lib/active";
 import { useStore } from "@/lib/store";
 import { Elapsed } from "./Elapsed";
 
@@ -29,7 +29,7 @@ export function ActiveSessionBanner() {
   if (pathname === "/" || pathname === "/history/" || pathname.startsWith(href)) return null;
 
   const done = loggedSetCount(active.logs);
-  const total = day.slots.reduce((n, s) => n + s.sets, 0);
+  const total = plannedSetCount(day.slots, active.logs);
 
   return (
     <div className="sticky top-[env(safe-area-inset-top)] z-40 -mx-1 mt-3 px-1">

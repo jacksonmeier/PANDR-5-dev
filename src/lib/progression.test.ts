@@ -236,6 +236,29 @@ describe("suggestNextLoad", () => {
       expect(s.reason).not.toMatch(/this day's/);
     });
 
+    it("looks straight past a day the lift was skipped", () => {
+      const skippedWed: Session = {
+        ...session(wed, 22.5, midRange, { id: "wed", date: "2026-09-16", createdAt: 2 }),
+      };
+      skippedWed.logs[0] = { ...skippedWed.logs[0], skipped: true };
+      const week = [session(mon, 20, toppedOut, { id: "mon", date: "2026-09-14", createdAt: 1 }), skippedWed];
+      const s = suggestNextLoad(fri, week, settings);
+      expect(s.basedOn?.sessionId).toBe("mon");
+      expect(s.action).toBe("increase");
+      expect(s.load).toBe(22.5);
+    });
+
+    it("looks past a day the lift was left blank, pre-filled load and all", () => {
+      const blank = [0, 1, 2].map(() => ({ reps: null, rir: 1 }));
+      const week = [
+        session(mon, 20, toppedOut, { id: "mon", date: "2026-09-14", createdAt: 1 }),
+        session(wed, 22.5, blank, { id: "wed", date: "2026-09-16", createdAt: 2 }),
+      ];
+      const s = suggestNextLoad(fri, week, settings);
+      expect(s.basedOn?.sessionId).toBe("mon");
+      expect(s.reason).toMatch(/Push/);
+    });
+
     it("says nothing about the day when the history is from the same day", () => {
       const s = suggestNextLoad(mon, [session(mon, 20, midRange)], settings);
       expect(s.reason).not.toMatch(/Push/);
@@ -249,7 +272,7 @@ describe("suggestNextLoad", () => {
       dayId: "push",
       date: "2026-09-01",
       createdAt: 1,
-      logs: [{ slotId: "push:retired-slot", exerciseId: "lateral-raise", load: 20, sets: [] }],
+      logs: [{ slotId: "push:retired-slot", exerciseId: "lateral-raise", load: 20, sets: [{ reps: 10, rir: 1 }] }],
     };
     const s = suggestNextLoad(lat, [orphan], settings);
     expect(s.action).toBe("seed");

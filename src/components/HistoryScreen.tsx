@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { ExerciseLog, Session } from "@/lib/types";
 import { getDay, getSlot } from "@/data/program";
-import { elapsedMs, formatAgo, loggedSetCount } from "@/lib/active";
+import { elapsedMs, formatAgo, loggedExerciseCount, loggedSetCount, skippedCount } from "@/lib/active";
 import { EXERCISE_LIST, getExercise } from "@/data/exercises";
 import { anchorIndex, formatRir } from "@/lib/rir";
 import { formatLoad } from "@/lib/units";
@@ -26,7 +26,8 @@ export function HistoryScreen() {
 
   const byExercise = useMemo(() => {
     const rows: { session: Session; log: ExerciseLog }[] = [];
-    for (const s of sorted) for (const l of s.logs) if (l.exerciseId === exerciseId) rows.push({ session: s, log: l });
+    for (const s of sorted)
+      for (const l of s.logs) if (l.exerciseId === exerciseId && !l.skipped) rows.push({ session: s, log: l });
     return rows;
   }, [sorted, exerciseId]);
 
@@ -189,8 +190,9 @@ function SessionCard({
   onDelete: () => void;
 }) {
   const day = getDay(session.dayId);
-  const logged = session.logs.filter((l) => l.sets.some((s) => s.reps !== null));
-  const setCount = session.logs.reduce((n, l) => n + l.sets.filter((s) => s.reps !== null).length, 0);
+  const exerciseCount = loggedExerciseCount(session.logs);
+  const setCount = loggedSetCount(session.logs);
+  const skipped = skippedCount(session.logs);
   return (
     <Card className="reveal" style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
       <details className="group">
@@ -204,7 +206,8 @@ function SessionCard({
               <Tag tone="chalk">rest done</Tag>
             ) : (
               <span className="num whitespace-nowrap text-xs text-bone-2">
-                {logged.length} ex · {setCount} sets
+                {exerciseCount} ex · {setCount} sets
+                {skipped > 0 && <span className="text-bone-3"> · {skipped} skipped</span>}
               </span>
             )}
             <span className="text-bone-3 transition-transform group-open:rotate-180" aria-hidden>
@@ -216,6 +219,14 @@ function SessionCard({
           {session.logs.length > 0 && (
             <ul className="grid gap-1.5 text-sm">
               {session.logs.map((l) => {
+                if (l.skipped) {
+                  return (
+                    <li key={l.slotId} className="flex min-w-0 items-center justify-between gap-3 border-b border-line/60 py-1.5 text-bone-3">
+                      <span className="truncate line-through">{getExercise(l.exerciseId).name}</span>
+                      <Tag>skipped</Tag>
+                    </li>
+                  );
+                }
                 const slot = getSlot(l.slotId);
                 const ai = slot ? anchorIndex(slot.rir) : l.sets.length - 1;
                 return (

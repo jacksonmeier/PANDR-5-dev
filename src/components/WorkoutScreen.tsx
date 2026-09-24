@@ -13,7 +13,9 @@ import {
   formatAgo,
   loggedSetCount,
   orderSlots,
+  plannedSetCount,
   reorder,
+  skippedCount,
 } from "@/lib/active";
 import { todayIso } from "@/lib/schedule";
 import { useStore } from "@/lib/store";
@@ -93,6 +95,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
           exerciseId: slot.exerciseId,
           load: d[slot.id].load,
           sets: d[slot.id].sets,
+          ...(d[slot.id].skipped ? { skipped: true as const } : {}),
         })),
     [dayDef],
   );
@@ -117,7 +120,9 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
       const logs = alignLogs(dayDef.slots, source.logs);
       setOrder(logs.map((l) => l.slotId));
       setDrafts(
-        Object.fromEntries(logs.map((l) => [l.slotId, { load: l.load, sets: l.sets }])),
+        Object.fromEntries(
+          logs.map((l) => [l.slotId, { load: l.load, sets: l.sets, skipped: !!l.skipped }]),
+        ),
       );
       return;
     }
@@ -161,8 +166,13 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     );
   }, [draftSession, history, dayDef, settings]);
 
-  const loggedSets = drafts ? loggedSetCount(toLogs(drafts, order)) : 0;
+  const draftLogs = drafts ? toLogs(drafts, order) : [];
+  const loggedSets = loggedSetCount(draftLogs);
+  /** The prescription, for the header. */
   const totalSets = dayDef.slots.reduce((n, s) => n + s.sets, 0);
+  /** What is left to do after skips, for the progress bar. */
+  const plannedSets = plannedSetCount(dayDef.slots, draftLogs);
+  const skipped = skippedCount(draftLogs);
   /** The cards to render, in this session's order. */
   const orderedSlots = useMemo(
     () => orderSlots(dayDef.slots, order).filter((slot) => !drafts || drafts[slot.id]),
@@ -195,6 +205,17 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     setOrder(next);
     setMoved(keepInView);
     if (live && drafts) writeActive({ dayId: day, date, logs: toLogs(drafts, next) });
+  }
+
+  /**
+   * Skip is a plan, not a performance, so like reordering it does not start a
+   * session on its own. Once one is live it is written through with it.
+   */
+  function skip(slotId: string, value: boolean) {
+    if (!drafts) return;
+    const next = { ...drafts, [slotId]: { ...drafts[slotId], skipped: value } };
+    setDrafts(next);
+    if (live) writeActive({ dayId: day, date, logs: toLogs(next, order) });
   }
 
   function move(slotId: string, delta: -1 | 1) {
@@ -334,6 +355,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
                 draft={drafts[slot.id]}
                 onChange={(d) => change(slot.id, d)}
                 onMove={(delta) => move(slot.id, delta)}
+                onSkip={(value) => skip(slot.id, value)}
                 isFirst={i === 0}
                 isLast={i === orderedSlots.length - 1}
                 suggestion={suggestions[slot.id]}
@@ -355,7 +377,10 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
               <span className="eyebrow">Progress</span>
               <span className="num text-lg font-semibold">
                 {loggedSets}
-                <span className="text-bone-3">/{totalSets} sets</span>
+                <span className="text-bone-3">/{plannedSets} sets</span>
+                {skipped > 0 && (
+                  <span className="ml-2 text-xs font-normal text-bone-3">{skipped} skipped</span>
+                )}
               </span>
               <span className="text-[11px] text-bone-3">
                 {editing

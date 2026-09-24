@@ -12,8 +12,12 @@ export function emptyTotals(): MuscleTotals {
   return t;
 }
 
-/** A set counts as performed when reps were recorded, including 0 for a partials-only finisher. */
+/**
+ * A set counts as performed when reps were recorded, including 0 for a
+ * partials-only finisher. Nothing in a skipped exercise counts.
+ */
 export function performedSets(log: ExerciseLog): number {
+  if (log.skipped) return 0;
   return log.sets.filter((s) => s.reps !== null).length;
 }
 

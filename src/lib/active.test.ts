@@ -11,6 +11,8 @@ import {
   hasLoggedWork,
   loggedExerciseCount,
   loggedSetCount,
+  plannedSetCount,
+  skippedCount,
 } from "./active";
 import type { ActiveSession, ExerciseLog, Slot } from "./types";
 
@@ -217,5 +219,34 @@ describe("formatAgo", () => {
     expect(formatAgo(5 * 3_600_000)).toBe("5 hours ago");
     expect(formatAgo(26 * 3_600_000)).toBe("yesterday");
     expect(formatAgo(3 * 24 * 3_600_000)).toBe("3 days ago");
+  });
+});
+
+describe("skipping an exercise", () => {
+  const slots = [slot("push:a", 2), slot("push:b", 3), slot("push:c", 4)];
+  const logs = [
+    log("push:a", 100, [10, 9]),
+    { ...log("push:b", 40, [12, null, null]), skipped: true as const },
+    log("push:c", 20, [null, null, null, null]),
+  ];
+
+  it("takes its sets out of the plan", () => {
+    expect(plannedSetCount(slots, logs)).toBe(2 + 4);
+    expect(plannedSetCount(slots, [])).toBe(9);
+  });
+
+  it("counts none of its sets as done, even ones logged before skipping", () => {
+    expect(loggedSetCount(logs)).toBe(2);
+    expect(loggedExerciseCount(logs)).toBe(1);
+  });
+
+  it("is counted", () => {
+    expect(skippedCount(logs)).toBe(1);
+  });
+
+  it("survives being read back from storage", () => {
+    const out = alignLogs(slots, logs);
+    expect(out.find((l) => l.slotId === "push:b")?.skipped).toBe(true);
+    expect(out.find((l) => l.slotId === "push:a")?.skipped).toBeUndefined();
   });
 });

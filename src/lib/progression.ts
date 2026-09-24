@@ -2,13 +2,23 @@ import type { ExerciseLog, Session, Settings, Slot, Suggestion, SuggestionAction
 import { RIR_META, anchorIndex, formatRir } from "./rir";
 import { INCREMENT, roundToIncrement } from "./units";
 import { getDay, getSlot } from "@/data/program";
+import { performedSets } from "./volume";
 
 interface Found {
   session: Session;
   log: ExerciseLog & { load: number };
 }
 
-/** Newest log (by session createdAt) matching `pred`, with a recorded load. */
+/**
+ * Newest log (by session createdAt) matching `pred` that is a real
+ * performance: a recorded load and at least one set done, in an exercise that
+ * was not skipped.
+ *
+ * Loads are pre-filled from the recommendation, so an exercise left blank or
+ * skipped still carries a load. Counting it would let a day you never did the
+ * lift overwrite the day you did, and with one progression line across the
+ * week, that would reach every day it appears on.
+ */
 function newestLog(
   sessions: readonly Session[],
   pred: (log: ExerciseLog) => boolean,
@@ -16,7 +26,7 @@ function newestLog(
   let best: Found | undefined;
   for (const session of sessions) {
     for (const log of session.logs) {
-      if (log.load === null || !pred(log)) continue;
+      if (log.load === null || performedSets(log) === 0 || !pred(log)) continue;
       if (!best || session.createdAt >= best.session.createdAt) {
         best = { session, log: { ...log, load: log.load } };
       }

@@ -9,6 +9,7 @@
 
 import type { ActiveSession, ExerciseLog, LoggedSet, Session, Slot } from "./types";
 import { defaultLoggedRir } from "./rir";
+import { performedSets } from "./volume";
 
 /** A set row with nothing logged, defaulting the RIR to the prescribed target. */
 export function blankSets(slot: Slot): LoggedSet[] {
@@ -78,18 +79,34 @@ export function alignLogs(slots: readonly Slot[], logs: readonly ExerciseLog[]):
       exerciseId: slot.exerciseId,
       load: found?.load ?? null,
       sets: blanks.map((b, i) => found?.sets[i] ?? b),
+      ...(found?.skipped ? { skipped: true as const } : {}),
     };
   });
 }
 
-/** Sets with a rep count recorded. The progress denominator is the slot count. */
+/** Sets with a rep count recorded, outside skipped exercises. */
 export function loggedSetCount(logs: readonly ExerciseLog[]): number {
-  return logs.reduce((n, l) => n + l.sets.filter((s) => s.reps !== null).length, 0);
+  return logs.reduce((n, l) => n + performedSets(l), 0);
 }
 
-/** Exercises with at least one set recorded. */
+/** Exercises with at least one set recorded, outside skipped exercises. */
 export function loggedExerciseCount(logs: readonly ExerciseLog[]): number {
-  return logs.filter((l) => l.sets.some((s) => s.reps !== null)).length;
+  return logs.filter((l) => performedSets(l) > 0).length;
+}
+
+/** Exercises marked skipped. */
+export function skippedCount(logs: readonly ExerciseLog[]): number {
+  return logs.filter((l) => l.skipped).length;
+}
+
+/**
+ * Sets still planned for the session: the prescription, less every skipped
+ * exercise. The progress denominator, so skipping something you have no time
+ * for does not leave the bar forever short of done.
+ */
+export function plannedSetCount(slots: readonly Slot[], logs: readonly ExerciseLog[]): number {
+  const skipped = new Set(logs.filter((l) => l.skipped).map((l) => l.slotId));
+  return slots.reduce((n, s) => (skipped.has(s.id) ? n : n + s.sets), 0);
 }
 
 /** True once anything at all has been recorded. */

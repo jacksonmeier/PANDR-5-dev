@@ -10,6 +10,7 @@ A self-contained web tracker for the **PANDR-5 model**: a five-day Push / Pull /
 - **Workout logging**: one load per exercise, reps and achieved RIR per set. The card shows what next session's load will be as you fill in the anchor set.
 - **Sessions in progress**: the first set you log starts a live session. It is written to storage on every keystroke, so you can put the phone away, walk to the next machine, check your volume, close the app, and come back to the same session with a running clock. It is not a workout until you **Mark complete**: until then it stays out of history, volume and the progression engine, and the home screen, the cycle strip and history all point back to it. One at a time, so "in progress" means something; **Discard** throws it away.
 - **Reorder for one workout**: the arrows on each card move an exercise up or down, for when the machine you wanted is taken. The order belongs to that session alone. It survives leaving the page and a reload, and history shows the session in the order you actually performed it, but the next time that day comes round it starts in program order again. **Program order** puts it back.
+- **Skip**: tick **Skip** on any exercise you don't have time for. The card folds away and its sets come off the progress count. A skipped exercise counts for nothing: not volume, not history totals, and not progression, so skipping lateral raises on Legs leaves Push's result to set Lower's load. Unticking brings back anything you had entered. An exercise left completely blank is ignored by progression the same way, since its load was only ever the pre-filled suggestion.
 - **Rest timer**: the clock in the bottom bar restarts the moment you log a set, and tapping it restarts it by hand. It counts from the stored timestamp rather than a running interval, so it keeps time with the phone in your pocket and reads correctly after a reload.
 - **Double progression engine**: implements the post's rules exactly. Anchor set reaches the top of the range, add 2 to 5%. Misses the floor at 0 to 1 RIR, drop 2 to 3%. Inside the range, hold and chase reps. Beyond-failure sets never touch the decision.
 - **One lift, one progression line**: an exercise that appears on several days is the same lift. Its newest performance on *any* day drives the next load everywhere, so lateral raises that top out on Push are heavier on Legs, and Legs' result sets Lower's. The performance is judged against the rep range it was actually done at. Where two days prescribe different ranges (Incline DB Press is 8-11 on Push and 6-9 on Upper), the load is converted between them by Epley's rep-max relation with reps counted to failure, so the same effort carries across; where the prescriptions match, the load carries over untouched.
@@ -66,7 +67,7 @@ Two things worth knowing:
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # 138 unit tests
+npm test             # 156 unit tests
 npm run lint
 npm run build        # static export to ./out, and generates out/sw.js
 npm run icons        # regenerate public/ rasters from assets/icon/*.svg (needs sharp)
