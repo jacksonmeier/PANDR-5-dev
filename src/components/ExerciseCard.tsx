@@ -22,10 +22,7 @@ export function ExerciseCard({
   exercise,
   draft,
   onChange,
-  onMove,
   onSkip,
-  isFirst,
-  isLast,
   suggestion,
   preview,
   unit,
@@ -35,12 +32,8 @@ export function ExerciseCard({
   exercise: Exercise;
   draft: Draft;
   onChange: (d: Draft) => void;
-  /** Move this exercise one place earlier (-1) or later (1) in this session. */
-  onMove: (delta: -1 | 1) => void;
   /** Skip or unskip this exercise for this session. */
   onSkip: (skipped: boolean) => void;
-  isFirst: boolean;
-  isLast: boolean;
   suggestion: Suggestion;
   /** What next session would look like if this draft were saved now. */
   preview: Suggestion | null;
@@ -57,9 +50,9 @@ export function ExerciseCard({
       className={`reveal overflow-hidden ${skipped ? "opacity-70" : ""}`}
       style={{ animationDelay: `${index * 45}ms` }}
     >
-      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 border-b border-line px-4 py-3">
-        <div className="min-w-0 flex-1 basis-52">
-          <div className="flex items-baseline gap-2">
+      <div className="border-b border-line px-4 py-3">
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+          <div className="flex min-w-0 flex-1 basis-52 items-baseline gap-2">
             <span className="num shrink-0 text-xs text-bone-3">{String(index + 1).padStart(2, "0")}</span>
             <h3
               className={`display text-2xl font-bold leading-[1.05] tracking-tight ${skipped ? "text-bone-3 line-through decoration-2" : ""}`}
@@ -67,46 +60,34 @@ export function ExerciseCard({
               {exercise.name}
             </h3>
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-bone-2">
-            <span className="flex items-center gap-1">
-              <MoveButton
-                label={`Move ${exercise.name} earlier`}
-                glyph="↑"
-                disabled={isFirst}
-                onClick={() => onMove(-1)}
-              />
-              <MoveButton
-                label={`Move ${exercise.name} later`}
-                glyph="↓"
-                disabled={isLast}
-                onClick={() => onMove(1)}
-              />
-            </span>
+          <div className="shrink-0">
+            <RirChips rir={slot.rir} size="sm" />
+          </div>
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-3 text-sm text-bone-2">
+          <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <span className="num">
               {slot.sets} × {slot.repRange.lo}–{slot.repRange.hi}
             </span>
             {exercise.technicalFailure && !skipped && (
               <Tag tone="amber">0 RIR = last clean rep</Tag>
             )}
-            <label
-              className={[
-                "flex h-9 cursor-pointer select-none items-center gap-2 rounded-md border px-2.5 text-xs font-bold uppercase tracking-[0.12em] transition-colors",
-                skipped ? "border-oxide/60 bg-oxide-deep/30 text-oxide-2" : "border-line-2 text-bone-2 hover:bg-ink-3",
-              ].join(" ")}
-            >
-              <input
-                type="checkbox"
-                checked={skipped}
-                onChange={(e) => onSkip(e.target.checked)}
-                className="h-4 w-4 accent-oxide"
-                aria-label={`Skip ${exercise.name} this session`}
-              />
-              Skip
-            </label>
-          </div>
-        </div>
-        <div className="shrink-0">
-          <RirChips rir={slot.rir} size="sm" />
+          </span>
+          <label
+            className={[
+              "flex h-9 shrink-0 cursor-pointer select-none items-center gap-2 rounded-md border px-2.5 text-xs font-bold uppercase tracking-[0.12em] transition-colors",
+              skipped ? "border-oxide/60 bg-oxide-deep/30 text-oxide-2" : "border-line-2 text-bone-2 hover:bg-ink-3",
+            ].join(" ")}
+          >
+            <input
+              type="checkbox"
+              checked={skipped}
+              onChange={(e) => onSkip(e.target.checked)}
+              className="h-4 w-4 accent-oxide"
+              aria-label={`Skip ${exercise.name} this session`}
+            />
+            Skip
+          </label>
         </div>
       </div>
 
@@ -168,31 +149,5 @@ export function ExerciseCard({
         </div>
       )}
     </Card>
-  );
-}
-
-/** One half of the reorder control. Sized for a thumb, not a mouse. */
-export function MoveButton({
-  label,
-  glyph,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  glyph: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-line-2 text-base text-bone-2 transition-colors hover:bg-ink-3 hover:text-bone disabled:cursor-not-allowed disabled:border-line disabled:text-bone-3 disabled:opacity-40"
-    >
-      <span aria-hidden>{glyph}</span>
-    </button>
   );
 }

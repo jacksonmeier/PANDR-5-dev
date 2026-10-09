@@ -57,8 +57,6 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
    * back to the program, so the next one starts in program order again.
    */
   const [order, setOrder] = useState<string[]>(() => dayDef.slots.map((s) => s.id));
-  /** Slot just moved, so the card can be kept in view under the thumb. */
-  const [moved, setMoved] = useState<string | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
   /** Lift picked in the summary, brought into view once the summary has closed. */
   const [jumpTo, setJumpTo] = useState<string | null>(null);
@@ -143,14 +141,6 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     );
   }, [hydrated, drafts, sessions, settings, day, date, dayDef, editId, live]);
 
-  // A card that jumps past a neighbour taller than the screen would otherwise
-  // leave the lifter looking at a different exercise.
-  useEffect(() => {
-    if (!moved) return;
-    cardRefs.current[moved]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    setMoved(null);
-  }, [moved, order]);
-
   // Waits for the summary to close, so the scroll lands on a page that is no
   // longer held still behind it.
   useEffect(() => {
@@ -213,9 +203,8 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
    * cards while deciding what to do first should not leave a phantom workout in
    * progress. Once one is underway the new order is written through with it.
    */
-  function applyOrder(next: string[], keepInView: string | null) {
+  function applyOrder(next: string[]) {
     setOrder(next);
-    setMoved(keepInView);
     if (live && drafts) writeActive({ dayId: day, date, logs: toLogs(drafts, next) });
   }
 
@@ -231,12 +220,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   }
 
   function move(slotId: string, delta: -1 | 1) {
-    applyOrder(reorder(order, slotId, delta), slotId);
-  }
-
-  /** From the summary, where the whole list is already in view. */
-  function moveInSummary(slotId: string, delta: -1 | 1) {
-    applyOrder(reorder(order, slotId, delta), null);
+    applyOrder(reorder(order, slotId, delta));
   }
 
   function jump(slotId: string) {
@@ -245,7 +229,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   }
 
   function resetOrder() {
-    applyOrder([...programOrder], null);
+    applyOrder([...programOrder]);
   }
 
   function changeDate(value: string) {
@@ -370,10 +354,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
                 exercise={getExercise(slot.exerciseId)}
                 draft={drafts[slot.id]}
                 onChange={(d) => change(slot.id, d)}
-                onMove={(delta) => move(slot.id, delta)}
                 onSkip={(value) => skip(slot.id, value)}
-                isFirst={i === 0}
-                isLast={i === orderedSlots.length - 1}
                 suggestion={suggestions[slot.id]}
                 preview={previews[slot.id] ?? null}
                 unit={settings.unit}
@@ -478,7 +459,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
           loggedSets={loggedSets}
           plannedSets={plannedSets}
           customOrder={customOrder}
-          onMove={moveInSummary}
+          onMove={move}
           onResetOrder={resetOrder}
           onJump={jump}
         />

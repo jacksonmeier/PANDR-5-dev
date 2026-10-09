@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Slot, Unit } from "@/lib/types";
 import { getExercise } from "@/data/exercises";
-import { MoveButton, type Draft } from "./ExerciseCard";
+import type { Draft } from "./ExerciseCard";
 import { Button } from "./ui";
 
 /**
@@ -174,5 +174,31 @@ export function WorkoutSummary({
         </Button>
       </footer>
     </dialog>
+  );
+}
+
+/** One half of the reorder control. Sized for a thumb, not a mouse. */
+function MoveButton({
+  label,
+  glyph,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  glyph: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-line-2 text-base text-bone-2 transition-colors hover:bg-ink-3 hover:text-bone disabled:cursor-not-allowed disabled:border-line disabled:text-bone-3 disabled:opacity-40"
+    >
+      <span aria-hidden>{glyph}</span>
+    </button>
   );
 }
