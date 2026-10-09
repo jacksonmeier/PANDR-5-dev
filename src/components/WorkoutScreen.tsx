@@ -22,6 +22,7 @@ import { useStore } from "@/lib/store";
 import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
 import { ExerciseCard, type Draft } from "./ExerciseCard";
 import { Elapsed } from "./Elapsed";
+import { WorkoutSummary } from "./WorkoutSummary";
 
 type Drafts = Record<string, Draft>;
 
@@ -58,6 +59,9 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
   const [order, setOrder] = useState<string[]>(() => dayDef.slots.map((s) => s.id));
   /** Slot just moved, so the card can be kept in view under the thumb. */
   const [moved, setMoved] = useState<string | null>(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  /** Lift picked in the summary, brought into view once the summary has closed. */
+  const [jumpTo, setJumpTo] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const programOrder = useMemo(() => dayDef.slots.map((slot) => slot.id), [dayDef]);
@@ -147,6 +151,14 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
     setMoved(null);
   }, [moved, order]);
 
+  // Waits for the summary to close, so the scroll lands on a page that is no
+  // longer held still behind it.
+  useEffect(() => {
+    if (!jumpTo || summaryOpen) return;
+    cardRefs.current[jumpTo]?.scrollIntoView({ block: "start", behavior: "smooth" });
+    setJumpTo(null);
+  }, [jumpTo, summaryOpen]);
+
   const draftSession = useMemo<Session | null>(() => {
     if (!drafts) return null;
     return {
@@ -220,6 +232,16 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
 
   function move(slotId: string, delta: -1 | 1) {
     applyOrder(reorder(order, slotId, delta), slotId);
+  }
+
+  /** From the summary, where the whole list is already in view. */
+  function moveInSummary(slotId: string, delta: -1 | 1) {
+    applyOrder(reorder(order, slotId, delta), null);
+  }
+
+  function jump(slotId: string) {
+    setJumpTo(slotId);
+    setSummaryOpen(false);
   }
 
   function resetOrder() {
@@ -303,13 +325,6 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
         title={dayDef.label}
       >
         <div className="flex flex-wrap items-center gap-3">
-          {live && (
-            <Tag tone="amber" className="h-10 gap-2 px-2.5 text-xs">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber" aria-hidden />
-              In progress
-              <Elapsed since={live.startedAt} />
-            </Tag>
-          )}
           {editing && <Tag tone="steel" className="h-10 px-2.5 text-xs">Editing a saved session</Tag>}
           <label className="flex items-center gap-2 text-sm text-bone-2">
             <span className="eyebrow">Date</span>
@@ -347,6 +362,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
               ref={(el) => {
                 cardRefs.current[slot.id] = el;
               }}
+              className="scroll-mt-[calc(env(safe-area-inset-top)+0.75rem)]"
             >
               <ExerciseCard
                 index={i}
@@ -373,15 +389,32 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
           className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 shadow-[0_-12px_40px_rgba(0,0,0,0.5)]"
         >
           <div className="flex min-w-0 flex-1 basis-64 items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="eyebrow">Progress</span>
-              <span className="num text-lg font-semibold">
-                {loggedSets}
-                <span className="text-bone-3">/{plannedSets} sets</span>
-                {skipped > 0 && (
-                  <span className="ml-2 text-xs font-normal text-bone-3">{skipped} skipped</span>
-                )}
-              </span>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <span className="eyebrow">Progress</span>
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="num whitespace-nowrap text-lg font-semibold">
+                      {loggedSets}
+                      <span className="text-bone-3">/{plannedSets} sets</span>
+                    </span>
+                    {skipped > 0 && (
+                      <span className="num whitespace-nowrap text-xs text-bone-3">
+                        {skipped} skipped
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <Button
+                  tone="ghost"
+                  onClick={() => setSummaryOpen(true)}
+                  disabled={!drafts}
+                  aria-haspopup="dialog"
+                  className="min-h-10 px-3"
+                >
+                  Summary
+                </Button>
+              </div>
               <span className="text-[11px] text-bone-3">
                 {editing
                   ? "Changes apply when you update."
@@ -405,18 +438,51 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex grow items-center gap-2">
             {live && (
               <Button tone="danger" onClick={discard} disabled={saved}>
                 Discard
               </Button>
             )}
-            <Button onClick={complete} disabled={!drafts || saved} className="min-w-36">
+            <Button
+              onClick={complete}
+              disabled={!drafts || saved}
+              className="flex-1 sm:min-w-36 sm:flex-none"
+            >
               {saved ? "Saved" : editing ? "Update session" : "Mark complete"}
             </Button>
+            {live && (
+              <div className="ml-auto flex shrink-0 flex-col items-end text-right">
+                <span className="eyebrow flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber" aria-hidden />
+                  In progress
+                </span>
+                <Elapsed
+                  since={live.startedAt}
+                  className="text-2xl font-semibold leading-tight text-amber"
+                />
+              </div>
+            )}
           </div>
         </Card>
       </div>
+
+      {drafts && (
+        <WorkoutSummary
+          open={summaryOpen}
+          onClose={() => setSummaryOpen(false)}
+          title={dayDef.label}
+          slots={orderedSlots}
+          drafts={drafts}
+          unit={settings.unit}
+          loggedSets={loggedSets}
+          plannedSets={plannedSets}
+          customOrder={customOrder}
+          onMove={moveInSummary}
+          onResetOrder={resetOrder}
+          onJump={jump}
+        />
+      )}
     </>
   );
 }

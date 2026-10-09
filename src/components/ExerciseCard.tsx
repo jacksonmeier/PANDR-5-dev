@@ -172,7 +172,7 @@ export function ExerciseCard({
 }
 
 /** One half of the reorder control. Sized for a thumb, not a mouse. */
-function MoveButton({
+export function MoveButton({
   label,
   glyph,
   disabled,
