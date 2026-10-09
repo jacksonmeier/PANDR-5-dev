@@ -14,6 +14,17 @@
  *
  * The defaults below reproduce the original hand-picked palette to ~1/255 per
  * channel: accent #d9463f, warm tint at hue 85, dark mode.
+ *
+ * GLASS
+ * -----
+ * Surfaces are frosted glass in the Apple sense: a translucent fill over a soft,
+ * colourful scene, blurred and saturated through backdrop-filter, with a hairline
+ * edge, a specular highlight along the top, and a diffuse drop shadow for depth.
+ * The material is one set of tokens (--glass-*) that flips with the mode, and
+ * three classes: .glass (a panel), .glass-raised (a floating bar or sheet) and
+ * .glass-inset (a recessed well, no blur, for rows and fields inside a panel).
+ * The scene behind it (.scene) is drawn from the accent and tint hues, so the
+ * glass always refracts the user's own colours.
  */
 
 :root {
@@ -66,8 +77,34 @@
   --l-hazard: 0.343;
   --c-hazard: 0.059;
 
-  --grain: 0.045;
-  --glow: 0.08;
+  --grain: 0.04;
+
+  /* Glass material. Fill lightness sits a step above the page so a panel reads
+     as lifted even where nothing colourful is behind it. */
+  --glass-l: 0.31;
+  --glass-c: 0.012;
+  --glass-a: 0.5;
+  --glass-a-raised: 0.8;
+  --glass-inset-l: 0.13;
+  --glass-inset-a: 0.42;
+  --glass-blur: 22px;
+  --glass-sat: 170%;
+  /* Specular edge along the top, shade along the bottom, and the sheen that
+     sweeps across the face. */
+  --spec: 0.16;
+  --spec-low: 0.3;
+  --sheen: 0.06;
+  --edge: oklch(1 0 0 / 0.1);
+  --edge-strong: oklch(1 0 0 / 0.16);
+  --shadow-a: 0.5;
+  --shadow-float-a: 0.65;
+
+  /* The scene: soft orbs of the user's own hues, which the glass refracts. */
+  --orb-l: 0.46;
+  --orb-c: 0.9;
+  --orb-a: 0.55;
+  --orb-tint-c: 0.11;
+  --orb-tint-a: 0.4;
 }
 
 [data-mode="light"] {
@@ -111,8 +148,29 @@
   --l-hazard: 0.79;
   --c-hazard: 0.13;
 
-  --grain: 0.022;
-  --glow: 0.06;
+  --grain: 0.02;
+
+  --glass-l: 0.995;
+  --glass-c: 0.004;
+  --glass-a: 0.58;
+  --glass-a-raised: 0.88;
+  --glass-inset-l: 0.9;
+  --glass-inset-a: 0.45;
+  --glass-blur: 22px;
+  --glass-sat: 160%;
+  --spec: 0.9;
+  --spec-low: 0.05;
+  --sheen: 0.45;
+  --edge: oklch(0 0 0 / 0.08);
+  --edge-strong: oklch(0 0 0 / 0.14);
+  --shadow-a: 0.12;
+  --shadow-float-a: 0.2;
+
+  --orb-l: 0.86;
+  --orb-c: 0.62;
+  --orb-a: 0.7;
+  --orb-tint-c: 0.09;
+  --orb-tint-a: 0.6;
 }
 
 @theme {
@@ -146,6 +204,11 @@
      saturated in light mode, because a pale stripe on white reads as nothing. */
   --color-hazard: oklch(var(--l-hazard) var(--c-hazard) 81);
 
+  /* Corner radii of the glass. A panel, a well inside it, and a chip. */
+  --radius-glass: 1.625rem;
+  --radius-well: 1.125rem;
+  --radius-chip: 0.625rem;
+
   /* Faces are self-hosted via @fontsource; see the imports in src/app/layout.tsx.
      Loaded: Big Shoulders Display 700/800; Instrument Sans 400/500/600/700 + 400 italic;
      JetBrains Mono 400/600 — latin subset only. The fallback stacks below are what
@@ -155,17 +218,19 @@
   --font-body: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
+  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+
   --animate-rise: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
 
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(10px) scale(0.985);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
   @keyframes pulse-ring {
@@ -186,13 +251,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(
-      1200px 600px at 50% -200px,
-      oklch(var(--l-accent) var(--c-accent) var(--h-accent) / var(--glow)),
-      transparent 60%
-    ),
-    var(--color-ink);
+  background: var(--color-ink);
   color: var(--color-bone);
   font-family: var(--font-body);
   font-feature-settings: "ss01", "cv11";
@@ -201,22 +260,57 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Fine grain so large flat surfaces don't band. */
+/*
+ * The scene behind the glass. Three soft orbs: two in the accent hue, one in the
+ * tint hue, placed so a panel anywhere on a tall page has some colour under it.
+ * Fixed, so the colour stays put while the glass scrolls over it, which is what
+ * makes the blur read as refraction rather than a flat tint. Drawn with radial
+ * gradients rather than blurred elements so it costs nothing to composite.
+ */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      42% 34% at 12% 4%,
+      oklch(var(--orb-l) calc(var(--c-accent) * var(--orb-c)) var(--h-accent) / var(--orb-a)),
+      transparent 70%
+    ),
+    radial-gradient(
+      36% 30% at 92% 28%,
+      oklch(var(--orb-l) calc(var(--orb-tint-c) * var(--tint-sat)) var(--h-tint) / var(--orb-tint-a)),
+      transparent 70%
+    ),
+    radial-gradient(
+      44% 32% at 24% 86%,
+      oklch(var(--orb-l) calc(var(--c-accent) * var(--orb-c) * 0.8) calc(var(--h-accent) + 36) / calc(var(--orb-a) * 0.75)),
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 26% at 78% 72%,
+      oklch(var(--orb-l) calc(var(--orb-tint-c) * var(--tint-sat) * 0.8) calc(var(--h-tint) - 30) / calc(var(--orb-tint-a) * 0.7)),
+      transparent 70%
+    );
+}
+
+/* Fine grain so the soft scene doesn't band. Sits over the orbs, under the glass. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
   opacity: var(--grain);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 /* Status-bar scrim. apple-mobile-web-app-status-bar-style is black-translucent, so in
    standalone the web view extends under the clock and the Dynamic Island. The layout
-   container reserves that height with pt-[env(safe-area-inset-top)]; this paints it so
-   content scrolling upward disappears cleanly instead of sliding under the glyphs.
-   Zero height everywhere except an installed iOS web app. */
+   container reserves that height with pt-[env(safe-area-inset-top)]; this frosts it so
+   content scrolling upward blurs away under the glyphs instead of sliding under them
+   sharp. Zero height everywhere except an installed iOS web app. */
 body::after {
   content: "";
   position: fixed;
@@ -224,9 +318,150 @@ body::after {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top);
-  background: var(--color-ink);
+  background: oklch(var(--l-ink) calc(var(--ct-ink) * var(--tint-sat)) var(--h-tint) / 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(var(--glass-sat));
+  backdrop-filter: blur(16px) saturate(var(--glass-sat));
   z-index: 40;
   pointer-events: none;
+}
+
+@layer components {
+  /* A glass panel: the card, the tile, the pill. */
+  .glass {
+    position: relative;
+    border-radius: var(--radius-glass);
+    border: 1px solid var(--edge);
+    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a));
+    background-image: linear-gradient(
+      150deg,
+      oklch(1 0 0 / var(--sheen)) 0%,
+      oklch(1 0 0 / 0) 38%,
+      oklch(1 0 0 / 0) 70%,
+      oklch(1 0 0 / calc(var(--sheen) * 0.5)) 100%
+    );
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
+      inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
+      0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.4)),
+      0 14px 36px -14px oklch(0 0 0 / var(--shadow-a));
+  }
+
+  /* A floating bar or sheet: more opaque, so what is underneath stays legible
+     through it, and a deeper shadow because it sits higher. */
+  .glass-raised {
+    position: relative;
+    border-radius: var(--radius-glass);
+    border: 1px solid var(--edge-strong);
+    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a-raised));
+    background-image: linear-gradient(
+      150deg,
+      oklch(1 0 0 / calc(var(--sheen) * 1.2)) 0%,
+      oklch(1 0 0 / 0) 40%,
+      oklch(1 0 0 / 0) 70%,
+      oklch(1 0 0 / calc(var(--sheen) * 0.5)) 100%
+    );
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / calc(var(--spec) * 1.1)),
+      inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
+      0 2px 6px oklch(0 0 0 / calc(var(--shadow-float-a) * 0.35)),
+      0 24px 60px -16px oklch(0 0 0 / var(--shadow-float-a));
+  }
+
+  /* A recessed well inside a panel: a row, a field, a track. No blur of its
+     own, so a card full of them costs one compositing layer, not twenty. */
+  .glass-inset {
+    border-radius: var(--radius-well);
+    border: 1px solid var(--edge);
+    background-color: oklch(var(--glass-inset-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-inset-a));
+    box-shadow:
+      inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6)),
+      0 1px 0 oklch(1 0 0 / calc(var(--spec) * 0.5));
+  }
+
+  /* The selected segment, the knob of a control: opaque-ish, lit, no blur. */
+  .glass-knob {
+    border-radius: 9999px;
+    border: 1px solid var(--edge-strong);
+    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / calc(var(--glass-a-raised) + 0.18));
+    background-image: linear-gradient(180deg, oklch(1 0 0 / calc(var(--sheen) * 1.5)), oklch(1 0 0 / 0) 70%);
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
+      0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.5)),
+      0 6px 16px -6px oklch(0 0 0 / var(--shadow-a));
+  }
+
+  /* Solid accent with a glass sheen: the one prominent button on a screen. */
+  .btn-primary {
+    background-color: var(--color-oxide);
+    background-image: linear-gradient(180deg, oklch(1 0 0 / 0.24), oklch(1 0 0 / 0) 62%);
+    color: var(--color-on-accent);
+    border: 1px solid oklch(1 0 0 / 0.14);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.38),
+      inset 0 -1px 0 oklch(0 0 0 / 0.2),
+      0 1px 2px oklch(0 0 0 / 0.25),
+      0 12px 28px -10px oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.7);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-oxide-hover);
+  }
+  .btn-primary:active:not(:disabled) {
+    background-color: var(--color-oxide-active);
+  }
+
+  /* Form controls as recessed glass. */
+  .field {
+    border-radius: 9999px;
+    border: 1px solid var(--edge);
+    background-color: oklch(var(--glass-inset-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-inset-a));
+    color: var(--color-bone);
+    box-shadow: inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6));
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field:focus-within,
+  .field:focus {
+    border-color: oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.7);
+    box-shadow:
+      inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6)),
+      0 0 0 3px oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.22);
+    outline: none;
+  }
+
+  /* A press, the Apple way: the whole control gives a little. */
+  .press {
+    transition:
+      transform 0.18s var(--ease-spring),
+      background-color 0.18s,
+      border-color 0.18s,
+      color 0.18s,
+      box-shadow 0.18s,
+      opacity 0.18s;
+  }
+  .press:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+}
+
+/* No backdrop-filter, or the user asked for less transparency: the same
+   surfaces, nearly opaque, so nothing behind them bleeds through. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-a: 0.94;
+    --glass-a-raised: 0.98;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  [data-mode="dark"],
+  [data-mode="light"] {
+    --glass-a: 0.94;
+    --glass-a-raised: 0.98;
+    --glass-blur: 0px;
+  }
 }
 
 .num {
@@ -270,6 +505,33 @@ input[type="number"] {
   appearance: textfield;
 }
 
+/* The swatch inside a colour picker, rounded to match its capsule. */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 4px;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+
+select.field {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+}
+
 ::selection {
   background: var(--color-oxide);
   color: var(--color-on-accent);
@@ -286,5 +548,10 @@ input[type="number"] {
   }
   .pulse-ring {
     animation: none;
+  }
+  .press,
+  .press:active {
+    transition: none;
+    transform: none;
   }
 }

@@ -7,7 +7,7 @@ export function ProgramDay({ day, index = 0 }: { day: Day; index?: number }) {
   const totalSets = day.slots.reduce((n, s) => n + s.sets, 0);
   return (
     <Card className="reveal overflow-hidden" style={{ animationDelay: `${index * 70}ms` }}>
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line px-4 py-4">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-bone/8 px-5 py-4">
         <div>
           <Eyebrow>
             Day {day.position} · {day.slots.length} exercises · {totalSets} sets
@@ -20,11 +20,11 @@ export function ProgramDay({ day, index = 0 }: { day: Day; index?: number }) {
           Log this day
         </LinkButton>
       </div>
-      <ol className="divide-y divide-line">
+      <ol className="divide-y divide-bone/8">
         {day.slots.map((slot, i) => {
           const ex = getExercise(slot.exerciseId);
           return (
-            <li key={slot.id} className="grid grid-cols-[1.75rem_1fr] items-center gap-x-3 gap-y-1 px-4 py-3 sm:grid-cols-[1.75rem_1fr_auto]">
+            <li key={slot.id} className="grid grid-cols-[1.75rem_1fr] items-center gap-x-3 gap-y-1 px-5 py-3 sm:grid-cols-[1.75rem_1fr_auto]">
               <span className="num text-xs text-bone-3">{String(i + 1).padStart(2, "0")}</span>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

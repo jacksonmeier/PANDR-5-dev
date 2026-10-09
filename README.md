@@ -37,6 +37,30 @@ Implementation: `src/lib/color.ts` (sRGB and OKLCH conversion, gamut clamp), `sr
 (the two picks to four CSS custom properties), and the ladders at the top of
 `src/app/globals.css`. A small blocking script in `<head>` restores the saved theme before
 first paint, so a light-mode user never sees a frame of the dark default.
+
+### Glass
+
+Every surface is frosted glass in the Apple sense: a translucent fill over a soft, colourful
+scene, blurred and saturated through `backdrop-filter`, with a hairline edge, a specular
+highlight along the top and a diffuse shadow underneath. The scene behind it (`.scene` in the
+layout) is four radial orbs drawn from the accent and tint hues, fixed in place, so the glass
+always refracts the user's own colours as the page scrolls over them.
+
+The material is one set of `--glass-*` tokens that flips with the mode, and four classes in
+`globals.css`:
+
+| Class | Use |
+|---|---|
+| `.glass` | a card, a tile, the desktop nav capsule |
+| `.glass-raised` | something that floats: the tab bar, the workout bar, the summary sheet |
+| `.glass-inset` | a recessed well inside a panel: a set row, a field, a bar track. No blur of its own, so a card full of them costs one compositing layer |
+| `.glass-knob` | the lit, selected segment of a control, the active tab |
+
+Buttons are capsules, controls are segmented (`Segmented` in `src/components/ui.tsx`, a
+recessed track with a knob that slides), and inputs use `.field`. Where `backdrop-filter`
+is unsupported, or the OS asks for reduced transparency, the same surfaces render nearly
+opaque. Nothing animates continuously: a drifting backdrop would force every glass layer to
+re-blur each frame, which is the wrong trade on a phone in a gym.
 - **Research** and **About**: the citations and the author's own explanation, cross-linked.
 
 Everything is stored in the browser's `localStorage`. There is no backend, no account, and no

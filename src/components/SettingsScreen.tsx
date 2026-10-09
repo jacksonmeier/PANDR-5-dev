@@ -6,7 +6,7 @@ import type { Unit } from "@/lib/types";
 import { getDay } from "@/data/program";
 import { useStore } from "@/lib/store";
 import { INCREMENT } from "@/lib/units";
-import { Button, Card, Eyebrow, PageHeader, Skeleton } from "./ui";
+import { Button, Card, Eyebrow, PageHeader, Segmented, Skeleton } from "./ui";
 import { ThemeControls } from "./ThemeControls";
 
 export function SettingsScreen() {
@@ -97,23 +97,16 @@ export function SettingsScreen() {
 
         <Card className="reveal p-5">
           <Eyebrow>Units</Eyebrow>
-          <div className="mt-2 flex rounded-md border border-line-2 p-0.5" role="radiogroup" aria-label="Unit">
-            {(["lb", "kg"] as Unit[]).map((u) => (
-              <button
-                key={u}
-                type="button"
-                role="radio"
-                aria-checked={settings.unit === u}
-                onClick={() => changeUnit(u)}
-                className={[
-                  "display h-11 flex-1 rounded text-base font-bold uppercase tracking-[0.14em] transition-colors",
-                  settings.unit === u ? "bg-oxide text-on-accent" : "text-bone-2 hover:text-bone",
-                ].join(" ")}
-              >
-                {u}
-              </button>
-            ))}
-          </div>
+          <Segmented<Unit>
+            label="Unit"
+            className="mt-2"
+            value={settings.unit}
+            onChange={changeUnit}
+            options={[
+              { value: "lb", label: "lb" },
+              { value: "kg", label: "kg" },
+            ]}
+          />
           <p className="mt-2 text-xs text-bone-3">
             Loads round to {INCREMENT[settings.unit]} {settings.unit}. Switching converts every stored load.
           </p>
@@ -170,7 +163,7 @@ export function SettingsScreen() {
             onChange={(e) => setPasted(e.target.value)}
             placeholder="Or paste exported JSON here"
             rows={3}
-            className="num mt-3 w-full rounded-md border border-line-2 bg-ink p-2 text-base text-bone placeholder:text-bone-3"
+            className="field num mt-3 w-full rounded-well p-3 text-base placeholder:text-bone-3"
           />
           <Button tone="ghost" className="mt-2" onClick={() => doImport(pasted)} disabled={!pasted.trim()}>
             Import pasted
@@ -191,7 +184,7 @@ export function SettingsScreen() {
       </div>
 
       {message && (
-        <p role="status" className="mt-4 rounded-md border border-line bg-ink-2 px-4 py-2 text-sm text-bone-2">
+        <p role="status" className="glass mt-4 rounded-full px-5 py-2.5 text-sm text-bone-2">
           {message}
         </p>
       )}
@@ -237,9 +230,9 @@ function Percent({
             const n = Number(e.target.value);
             if (Number.isFinite(n) && n >= 0.5 && n <= 10) onChange(n);
           }}
-          className="num h-11 w-full rounded-md border border-line-2 bg-ink px-3 pr-8 text-lg font-semibold text-bone"
+          className="field num h-11 w-full px-4 pr-9 text-lg font-semibold"
         />
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-bone-3">%</span>
+        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-bone-3">%</span>
       </span>
     </label>
   );

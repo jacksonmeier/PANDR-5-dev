@@ -70,9 +70,9 @@ export function WorkoutSummary({
         if (e.target === e.currentTarget) onClose();
       }}
       aria-labelledby="workout-summary-title"
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden rounded-lg border border-line-2 bg-ink-2 p-0 text-bone shadow-[0_24px_80px_rgba(0,0,0,0.6)] backdrop:bg-black/60 open:flex"
+      className="glass-raised m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden p-0 text-bone backdrop:bg-black/40 backdrop:backdrop-blur-md open:flex"
     >
-      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+      <header className="flex items-start justify-between gap-3 border-b border-bone/8 px-4 py-3.5">
         <div className="min-w-0">
           <span className="eyebrow">
             Summary · {loggedSets}/{plannedSets} sets
@@ -88,13 +88,13 @@ export function WorkoutSummary({
           type="button"
           onClick={onClose}
           aria-label="Close summary"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line-2 text-bone-2 transition-colors hover:bg-ink-3 hover:text-bone"
+          className="glass-inset press flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-bone-2 hover:bg-bone/10 hover:text-bone"
         >
           <span aria-hidden>✕</span>
         </button>
       </header>
 
-      <ol className="min-h-0 flex-1 divide-y divide-line overflow-y-auto px-4">
+      <ol className="min-h-0 flex-1 divide-y divide-bone/8 overflow-y-auto px-4">
         {slots.map((slot, i) => {
           const draft = drafts[slot.id];
           if (!draft) return null;
@@ -161,7 +161,7 @@ export function WorkoutSummary({
         })}
       </ol>
 
-      <footer className="flex items-center justify-between gap-3 border-t border-line px-4 py-3">
+      <footer className="flex items-center justify-between gap-3 border-t border-bone/8 px-4 py-3">
         {customOrder ? (
           <Button tone="subtle" onClick={onResetOrder} className="min-h-9 px-3 text-sm">
             Program order
@@ -196,7 +196,7 @@ function MoveButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-line-2 text-base text-bone-2 transition-colors hover:bg-ink-3 hover:text-bone disabled:cursor-not-allowed disabled:border-line disabled:text-bone-3 disabled:opacity-40"
+      className="glass-inset press flex h-9 w-9 items-center justify-center rounded-full text-base text-bone-2 hover:bg-bone/10 hover:text-bone disabled:cursor-not-allowed disabled:text-bone-3 disabled:opacity-40"
     >
       <span aria-hidden>{glyph}</span>
     </button>

@@ -3,8 +3,8 @@
 import { useId } from "react";
 
 /**
- * A numeric field with big minus/plus targets. `value` null renders empty; the
- * first tap on plus lands on `start`.
+ * A numeric field with big minus/plus targets, as one recessed glass capsule.
+ * `value` null renders empty; the first tap on plus lands on `start`.
  */
 export function Stepper({
   label,
@@ -41,26 +41,26 @@ export function Stepper({
   const btn =
     size === "lg"
       ? "h-12 w-12 text-2xl"
-      : "h-10 w-9 text-lg";
+      : "h-9 w-8 text-lg";
   const field =
     size === "lg"
       ? "h-12 w-24 text-3xl"
-      : "h-10 w-12 text-lg";
+      : "h-9 w-11 text-lg";
 
   return (
-    <div className={`inline-flex items-stretch overflow-hidden rounded-md border border-line-2 bg-ink ${className}`}>
+    <div className={`field inline-flex shrink-0 items-stretch overflow-hidden rounded-full p-0.5 ${className}`}>
       <button
         type="button"
         aria-label={`Decrease ${label}`}
         onClick={dec}
-        className={`display font-bold text-bone-2 hover:bg-ink-3 active:bg-ink-4 ${btn}`}
+        className={`display press shrink-0 rounded-full font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
       >
         −
       </button>
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      <div className="relative flex items-center">
+      <div className="relative flex shrink-0 items-center">
         <input
           id={id}
           type="number"
@@ -78,7 +78,7 @@ export function Stepper({
           placeholder="–"
         />
         {suffix && (
-          <span className="pointer-events-none absolute right-1 bottom-1 text-[10px] text-bone-3">
+          <span className="pointer-events-none absolute right-1 bottom-1.5 text-[10px] text-bone-3">
             {suffix}
           </span>
         )}
@@ -87,7 +87,7 @@ export function Stepper({
         type="button"
         aria-label={`Increase ${label}`}
         onClick={inc}
-        className={`display font-bold text-bone-2 hover:bg-ink-3 active:bg-ink-4 ${btn}`}
+        className={`display press shrink-0 rounded-full font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
       >
         +
       </button>

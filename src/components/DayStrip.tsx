@@ -3,11 +3,12 @@ import { PROGRAM } from "@/data/program";
 import type { DayId } from "@/lib/types";
 import type { DayStatus } from "@/lib/schedule";
 
+/* Each tile is a small pane of glass; the status tints what shows through it. */
 const STATUS: Record<DayStatus, string> = {
-  done: "border-chalk/50 bg-chalk-deep/50 text-chalk",
-  active: "border-amber bg-amber-deep/60 text-amber pulse-ring animate-pulse-ring",
-  next: "border-oxide bg-oxide-deep/40 text-bone pulse-ring animate-pulse-ring",
-  upcoming: "border-line bg-ink-2 text-bone-3",
+  done: "border-chalk/40 bg-chalk-deep/60 text-chalk",
+  active: "border-amber/70 bg-amber-deep/70 text-amber pulse-ring animate-pulse-ring",
+  next: "border-oxide/70 bg-oxide-deep/50 text-bone pulse-ring animate-pulse-ring",
+  upcoming: "text-bone-3",
 };
 
 const CAPTION: Record<DayStatus, string> = {
@@ -32,7 +33,7 @@ export function DayStrip({
         const inner = (
           <div
             className={[
-              "flex h-16 min-w-0 flex-col items-center justify-center overflow-hidden rounded-md border px-0.5 transition-colors sm:h-20",
+              "glass press flex h-16 min-w-0 flex-col items-center justify-center overflow-hidden rounded-well px-0.5 sm:h-20",
               STATUS[st],
               href ? "hover:border-oxide-2" : "",
             ].join(" ")}
@@ -48,7 +49,7 @@ export function DayStrip({
         return (
           <li key={day.id} className="reveal min-w-0" style={{ animationDelay: `${i * 50}ms` }}>
             {href ? (
-              <Link href={href} aria-label={`${day.label}, ${st}`}>
+              <Link href={href} aria-label={`${day.label}, ${st}`} className="block rounded-well">
                 {inner}
               </Link>
             ) : (

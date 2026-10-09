@@ -41,7 +41,7 @@ export default function AboutPage() {
             ))}
           </section>
 
-          <section className="grid gap-4 border-l-2 border-oxide pl-4 text-[15px] leading-relaxed">
+          <section className="grid gap-4 border-l-2 border-oxide/80 pl-4 text-[15px] leading-relaxed">
             {POST_BODY.map((p, i) => (
               <Cited key={i} text={p} />
             ))}

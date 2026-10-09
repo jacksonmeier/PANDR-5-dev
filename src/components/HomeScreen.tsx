@@ -103,7 +103,7 @@ export function HomeScreen() {
             </p>
             <ul className="mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 text-sm text-bone-2 sm:grid-cols-2">
               {next.slots.map((s) => (
-                <li key={s.id} className="flex min-w-0 justify-between gap-3 border-b border-line/60 py-1">
+                <li key={s.id} className="flex min-w-0 justify-between gap-3 border-b border-bone/8 py-1">
                   <span className="min-w-0 truncate">{exerciseName(s.exerciseId)}</span>
                   <span className="num shrink-0 text-bone-3">
                     {s.sets}×{s.repRange.lo}–{s.repRange.hi}
@@ -164,7 +164,7 @@ export function HomeScreen() {
                 {recent.map((s) => {
                   const d = getDay(s.dayId);
                   return (
-                    <li key={s.id} className="flex justify-between gap-3 border-b border-line/60 py-1">
+                    <li key={s.id} className="flex justify-between gap-3 border-b border-bone/8 py-1">
                       <span className="display font-bold uppercase tracking-wider">{d?.label}</span>
                       <span className="num text-bone-3">{s.date}</span>
                     </li>

@@ -316,7 +316,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
               type="date"
               value={date}
               onChange={(e) => changeDate(e.target.value)}
-              className="num h-10 rounded-md border border-line-2 bg-ink px-2 text-bone"
+              className="field num h-10 px-3"
             />
           </label>
         </div>
@@ -331,7 +331,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
       ) : (
         <div className="grid gap-3">
           {customOrder && (
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-line bg-ink-2 px-4 py-2.5">
+            <div className="glass flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-full px-4 py-2">
               <p className="text-xs text-bone-2">
                 Reordered for this session. The next {shortLabel} starts in program order.
               </p>
@@ -364,10 +364,10 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
         </div>
       )}
 
-      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 mt-4 sm:bottom-4">
+      <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 mt-4 sm:bottom-4">
         <Card
           tone="raised"
-          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 shadow-[0_-12px_40px_rgba(0,0,0,0.5)]"
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3"
         >
           <div className="flex min-w-0 flex-1 basis-64 items-center justify-between gap-4">
             <div className="flex min-w-0 flex-1 flex-col">
@@ -410,7 +410,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
                 onClick={() => setRestFrom(Date.now())}
                 aria-label="Restart the rest timer"
                 title="Restart the rest timer"
-                className="flex shrink-0 flex-col items-end rounded-md border border-line-2 px-3 py-1.5 text-right transition-colors hover:bg-ink-3 active:bg-ink-4"
+                className="glass-inset press flex shrink-0 flex-col items-end rounded-well px-3 py-1.5 text-right hover:bg-bone/8"
               >
                 <span className="eyebrow">Rest ↻</span>
                 <span className="num text-2xl font-semibold leading-tight text-bone">

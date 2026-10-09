@@ -50,7 +50,7 @@ export function ExerciseCard({
       className={`reveal overflow-hidden ${skipped ? "opacity-70" : ""}`}
       style={{ animationDelay: `${index * 45}ms` }}
     >
-      <div className="border-b border-line px-4 py-3">
+      <div className="border-b border-bone/8 px-4 py-3.5">
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
           <div className="flex min-w-0 flex-1 basis-52 items-baseline gap-2">
             <span className="num shrink-0 text-xs text-bone-3">{String(index + 1).padStart(2, "0")}</span>
@@ -75,8 +75,8 @@ export function ExerciseCard({
           </span>
           <label
             className={[
-              "flex h-9 shrink-0 cursor-pointer select-none items-center gap-2 rounded-md border px-2.5 text-xs font-bold uppercase tracking-[0.12em] transition-colors",
-              skipped ? "border-oxide/60 bg-oxide-deep/30 text-oxide-2" : "border-line-2 text-bone-2 hover:bg-ink-3",
+              "glass-inset press flex h-9 shrink-0 cursor-pointer select-none items-center gap-2 rounded-full pl-2.5 pr-3 text-xs font-bold uppercase tracking-[0.12em]",
+              skipped ? "border-oxide/60 bg-oxide-deep/40 text-oxide-2" : "text-bone-2 hover:bg-bone/8",
             ].join(" ")}
           >
             <input
@@ -136,7 +136,7 @@ export function ExerciseCard({
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-bone/8 pt-3">
             <span className="num text-xs text-bone-3">
               {performed}/{slot.sets} sets
             </span>

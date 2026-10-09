@@ -12,7 +12,7 @@ import {
   textSwatch,
 } from "@/lib/theme";
 import { useStore } from "@/lib/store";
-import { Button, Card, Eyebrow } from "./ui";
+import { Button, Card, Eyebrow, Segmented } from "./ui";
 
 const MODES: { value: ThemeMode; label: string }[] = [
   { value: "light", label: "Light" },
@@ -47,7 +47,7 @@ export function ThemeControls() {
         <div>
           <Eyebrow>Appearance</Eyebrow>
           <p className="mt-1 text-sm text-bone-2">
-            Two colours drive everything: an accent, and a hue that tints the surfaces.
+            Two colours drive everything: an accent, and a hue that tints the glass and the light behind it.
           </p>
         </div>
         <Preview theme={theme} mode={resolved} />
@@ -56,25 +56,13 @@ export function ThemeControls() {
       <div className="mt-5 grid gap-5">
         <div>
           <span className="eyebrow">Mode</span>
-          <div className="mt-2 flex rounded-md border border-line-2 p-0.5" role="radiogroup" aria-label="Colour mode">
-            {MODES.map((m) => (
-              <button
-                key={m.value}
-                type="button"
-                role="radio"
-                aria-checked={theme.mode === m.value}
-                onClick={() => set({ mode: m.value })}
-                className={[
-                  "display h-11 flex-1 rounded text-base font-bold uppercase tracking-[0.14em] transition-colors",
-                  theme.mode === m.value
-                    ? "bg-oxide text-on-accent"
-                    : "text-bone-2 hover:text-bone",
-                ].join(" ")}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <Segmented<ThemeMode>
+            label="Colour mode"
+            className="mt-2"
+            value={theme.mode}
+            onChange={(mode) => set({ mode })}
+            options={MODES}
+          />
           {theme.mode === "system" && (
             <p className="mt-1.5 text-xs text-bone-3">
               Following your device, which is currently {resolved}.
@@ -95,11 +83,11 @@ export function ThemeControls() {
                   onClick={() => set({ accent: p.accent, tint: p.tint })}
                   aria-pressed={active}
                   className={[
-                    "flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-md border p-2 transition-colors",
-                    active ? "border-oxide bg-ink-3" : "border-line hover:border-line-2",
+                    "glass-inset press flex min-h-16 flex-col items-center justify-center gap-1.5 p-2",
+                    active ? "border-oxide/70 bg-oxide-deep/40" : "hover:bg-bone/8",
                   ].join(" ")}
                 >
-                  <span className="flex overflow-hidden rounded-full border border-line-2">
+                  <span className="flex overflow-hidden rounded-full border border-bone/15 shadow-[0_2px_6px_oklch(0_0_0/0.25)]">
                     <span
                       className="h-5 w-5"
                       style={{ background: accentSwatch(swatch, resolved) }}
@@ -134,7 +122,7 @@ export function ThemeControls() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bone/8 pt-4">
           <p className="text-xs text-bone-3">
             The home screen icon keeps its own colours; it is baked at install time.
           </p>
@@ -180,7 +168,7 @@ function ColorField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label={`${label} colour`}
-          className="h-11 w-14 shrink-0 cursor-pointer rounded-md border border-line-2 bg-ink p-1"
+          className="field h-11 w-14 shrink-0 cursor-pointer"
         />
         <input
           type="text"
@@ -189,7 +177,7 @@ function ColorField({
           onBlur={() => setDraft(value)}
           spellCheck={false}
           aria-label={`${label} hex value`}
-          className="num h-11 w-full min-w-0 rounded-md border border-line-2 bg-ink px-3 text-base uppercase text-bone"
+          className="field num h-11 w-full min-w-0 px-4 text-base uppercase"
         />
       </span>
     </label>
@@ -204,13 +192,15 @@ function Preview({ theme, mode }: { theme: Theme; mode: "light" | "dark" }) {
   return (
     <div
       aria-hidden
-      className="flex w-36 flex-col gap-1.5 rounded-md border border-line-2 p-2.5"
-      style={{ background: surface }}
+      className="relative flex w-36 flex-col gap-1.5 overflow-hidden rounded-well border border-bone/15 p-2.5 shadow-[0_8px_24px_-8px_oklch(0_0_0/0.4)]"
+      style={{
+        background: `radial-gradient(70% 60% at 85% 0%, ${accent}66, transparent 70%), ${surface}`,
+      }}
     >
       <span className="h-2 w-12 rounded-full" style={{ background: accent }} />
       <span className="h-1.5 w-full rounded-full opacity-75" style={{ background: text }} />
       <span className="h-1.5 w-2/3 rounded-full opacity-45" style={{ background: text }} />
-      <span className="mt-1 h-5 w-16 rounded" style={{ background: accent }} />
+      <span className="mt-1 h-5 w-16 rounded-full" style={{ background: accent }} />
     </div>
   );
 }

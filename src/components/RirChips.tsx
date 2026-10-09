@@ -34,13 +34,13 @@ export function RirChips({
           >
             <span
               className={[
-                "num inline-flex items-center justify-center rounded border font-semibold",
+                "num inline-flex items-center justify-center rounded-chip border font-semibold",
                 chip,
                 meta.beyondFailure
                   ? "hazard border-amber/60 text-amber"
                   : highlight === i
-                    ? "border-oxide bg-oxide-deep/40 text-bone"
-                    : "border-line-2 bg-ink-3 text-bone-2",
+                    ? "border-oxide bg-oxide-deep/50 text-bone"
+                    : "border-bone/12 bg-bone/8 text-bone-2",
               ].join(" ")}
             >
               {meta.label}

@@ -49,7 +49,7 @@ function Row({
   tone?: "amber";
 }) {
   return (
-    <div className={`rounded-md border p-3 ${tone === "amber" ? "border-amber/40 bg-amber-deep/30 sm:col-span-2" : "border-line bg-ink"}`}>
+    <div className={`glass-inset p-3.5 ${tone === "amber" ? "border-amber/40 bg-amber-deep/40 sm:col-span-2" : ""}`}>
       <dt className="eyebrow mb-1">{label}</dt>
       <dd className="text-bone-2">{children}</dd>
     </div>

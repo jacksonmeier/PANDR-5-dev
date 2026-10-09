@@ -28,7 +28,11 @@ export function VolumeBar({
   const pct = (n: number) => `${Math.min(100, (n / scale) * 100)}%`;
   const reached = t.total > 0 ? value / t.total : 0;
   const tone =
-    reached >= 0.999 ? "bg-chalk" : reached >= 0.5 ? "bg-steel" : "bg-steel/60";
+    reached >= 0.999
+      ? "bg-chalk shadow-[0_0_12px_-2px_var(--color-chalk)]"
+      : reached >= 0.5
+        ? "bg-steel shadow-[0_0_12px_-2px_var(--color-steel)]"
+        : "bg-steel/60";
   return (
     <div className={compact ? "grid gap-0.5" : "grid gap-1"}>
       <div className="flex items-baseline justify-between gap-2 text-sm">
@@ -39,16 +43,16 @@ export function VolumeBar({
         </span>
       </div>
       <div
-        className={`relative w-full overflow-hidden rounded-sm bg-ink ${compact ? "h-2" : "h-3"}`}
+        className={`glass-inset relative w-full overflow-hidden rounded-full ${compact ? "h-2.5" : "h-3.5"}`}
         role="img"
         aria-label={`${t.name}: ${fmt(value)} of ${fmt(t.total)} effective sets`}
       >
         <div
-          className="absolute inset-y-0 bg-bone/5"
+          className="absolute inset-y-0 bg-bone/8"
           style={{ left: pct(OPTIMAL_RANGE.lo), width: pct(OPTIMAL_RANGE.hi - OPTIMAL_RANGE.lo) }}
           aria-hidden
         />
-        <div className={`absolute inset-y-0 left-0 rounded-sm ${tone} transition-[width] duration-500`} style={{ width: pct(value) }} />
+        <div className={`absolute inset-y-0 left-0 rounded-full ${tone} transition-[width] duration-500`} style={{ width: pct(value) }} />
         {t.total > 0 && (
           <div className="absolute inset-y-0 w-0.5 bg-oxide" style={{ left: pct(t.total) }} aria-hidden />
         )}
@@ -71,7 +75,7 @@ export function GroupSection({
   const target = GROUP_TARGETS[group];
   return (
     <section className="grid gap-3">
-      <header className="flex items-baseline justify-between border-b border-line pb-1">
+      <header className="flex items-baseline justify-between border-b border-bone/10 pb-1">
         <h3 className="display text-2xl font-bold uppercase tracking-tight">{GROUP_NAMES[group]}</h3>
         <span className="num text-sm">
           <span className="text-bone">{fmt(sum)}</span>
@@ -111,8 +115,8 @@ export function GroupOverview({ totals }: { totals: MuscleTotals }) {
             <span className="display text-sm font-bold uppercase tracking-wider text-bone-2">
               {GROUP_NAMES[g]}
             </span>
-            <div className="h-2 overflow-hidden rounded-sm bg-ink">
-              <div className={`h-full rounded-sm ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`} style={{ width: `${pct}%` }} />
+            <div className="glass-inset h-2.5 overflow-hidden rounded-full">
+              <div className={`h-full rounded-full ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`} style={{ width: `${pct}%` }} />
             </div>
             <span className="num text-xs text-bone-2">
               {fmt(sum)}<span className="text-bone-3">/{fmt(target)}</span>

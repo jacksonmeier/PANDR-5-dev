@@ -9,7 +9,7 @@ import { EXERCISE_LIST, getExercise } from "@/data/exercises";
 import { anchorIndex, formatRir } from "@/lib/rir";
 import { formatLoad } from "@/lib/units";
 import { useStore } from "@/lib/store";
-import { Button, Card, Eyebrow, LinkButton, PageHeader, Skeleton, Tag } from "./ui";
+import { Button, Card, Eyebrow, LinkButton, PageHeader, Segmented, Skeleton, Tag } from "./ui";
 
 type Tab = "sessions" | "exercise";
 
@@ -34,23 +34,17 @@ export function HistoryScreen() {
   return (
     <>
       <PageHeader eyebrow={`${sessions.length} sessions logged`} title="History">
-        <div className="flex rounded-md border border-line-2 p-0.5" role="tablist">
-          {(["sessions", "exercise"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
-              className={[
-                "display h-10 rounded px-3 text-sm font-bold uppercase tracking-[0.12em] transition-colors",
-                tab === t ? "bg-oxide text-on-accent" : "text-bone-2 hover:text-bone",
-              ].join(" ")}
-            >
-              {t === "sessions" ? "Sessions" : "By exercise"}
-            </button>
-          ))}
-        </div>
+        <Segmented<Tab>
+          role="tablist"
+          label="History view"
+          size="sm"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "sessions", label: "Sessions" },
+            { value: "exercise", label: "By exercise" },
+          ]}
+        />
       </PageHeader>
 
       {hydrated && active && tab === "sessions" && <InProgressCard />}
@@ -87,7 +81,7 @@ export function HistoryScreen() {
             <select
               value={exerciseId}
               onChange={(e) => setExerciseId(e.target.value)}
-              className="h-11 min-w-64 rounded-md border border-line-2 bg-ink px-3 text-bone"
+              className="field h-11 min-w-64 pl-4"
             >
               {[...EXERCISE_LIST].sort((a, b) => a.name.localeCompare(b.name)).map((ex) => (
                 <option key={ex.id} value={ex.id}>
@@ -102,7 +96,7 @@ export function HistoryScreen() {
             <Card className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left">
-                  <tr className="border-b border-line text-[11px] uppercase tracking-[0.14em] text-bone-3">
+                  <tr className="border-b border-bone/10 text-[11px] uppercase tracking-[0.14em] text-bone-3">
                     <th className="px-4 py-2 font-bold">Date</th>
                     <th className="px-4 py-2 font-bold">Day</th>
                     <th className="px-4 py-2 font-bold">Load</th>
@@ -116,7 +110,7 @@ export function HistoryScreen() {
                     const ai = slot ? anchorIndex(slot.rir) : log.sets.length - 1;
                     const a = log.sets[ai];
                     return (
-                      <tr key={session.id + log.slotId} className="border-b border-line/60">
+                      <tr key={session.id + log.slotId} className="border-b border-bone/6">
                         <td className="num px-4 py-2 text-bone-2">{session.date}</td>
                         <td className="display px-4 py-2 font-bold uppercase tracking-wider">{getDay(session.dayId)?.shortLabel}</td>
                         <td className="num px-4 py-2">{formatLoad(log.load, settings.unit) || "–"}</td>
@@ -147,7 +141,7 @@ function InProgressCard() {
   const day = getDay(active.dayId);
   const done = loggedSetCount(active.logs);
   return (
-    <Card tone="accent" className="mb-3 border-amber/60 p-4">
+    <Card tone="accent" className="mb-3 border-amber/60 p-4 shadow-[0_18px_48px_-18px_var(--color-amber)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -196,7 +190,7 @@ function SessionCard({
   return (
     <Card className="reveal" style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
       <details className="group">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-glass px-4 py-3.5 [&::-webkit-details-marker]:hidden">
           <div className="flex min-w-0 flex-col">
             <span className="display truncate text-2xl font-bold uppercase leading-tight tracking-tight">{day?.label}</span>
             <span className="num text-xs text-bone-3">{session.date}</span>
@@ -215,13 +209,13 @@ function SessionCard({
             </span>
           </div>
         </summary>
-        <div className="border-t border-line px-4 py-3">
+        <div className="border-t border-bone/8 px-4 py-3">
           {session.logs.length > 0 && (
             <ul className="grid gap-1.5 text-sm">
               {session.logs.map((l) => {
                 if (l.skipped) {
                   return (
-                    <li key={l.slotId} className="flex min-w-0 items-center justify-between gap-3 border-b border-line/60 py-1.5 text-bone-3">
+                    <li key={l.slotId} className="flex min-w-0 items-center justify-between gap-3 border-b border-bone/6 py-1.5 text-bone-3">
                       <span className="truncate line-through">{getExercise(l.exerciseId).name}</span>
                       <Tag>skipped</Tag>
                     </li>
@@ -230,7 +224,7 @@ function SessionCard({
                 const slot = getSlot(l.slotId);
                 const ai = slot ? anchorIndex(slot.rir) : l.sets.length - 1;
                 return (
-                  <li key={l.slotId} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-line/60 py-1.5 sm:grid-cols-[minmax(0,1fr)_6rem_minmax(0,1fr)]">
+                  <li key={l.slotId} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-bone/6 py-1.5 sm:grid-cols-[minmax(0,1fr)_6rem_minmax(0,1fr)]">
                     <span className="truncate">{getExercise(l.exerciseId).name}</span>
                     <span className="num text-right text-bone">{formatLoad(l.load, unit) || "–"}</span>
                     <span className="num col-span-2 text-xs text-bone-2 sm:col-span-1">{setsText(l, ai)}</span>
@@ -245,7 +239,7 @@ function SessionCard({
               {day?.kind === "training" && (
                 <Link
                   href={`/workout/${session.dayId}/?session=${encodeURIComponent(session.id)}`}
-                  className="display inline-flex min-h-11 items-center rounded-md border border-line-2 px-4 text-base font-bold uppercase tracking-[0.12em] text-bone hover:bg-ink-3"
+                  className="glass-inset display press inline-flex min-h-11 items-center rounded-full px-5 text-base font-bold uppercase tracking-[0.12em] text-bone hover:bg-bone/10"
                 >
                   Edit
                 </Link>
