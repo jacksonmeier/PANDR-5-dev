@@ -93,10 +93,10 @@ export function HomeScreen() {
                 </Tag>
               )}
             </div>
-            <h2 className="display mt-1 text-5xl font-extrabold uppercase leading-[0.9] tracking-tight">
+            <h2 className="display mt-1.5 text-5xl font-extrabold uppercase leading-[0.9] tracking-tight">
               {next.label}
             </h2>
-            <p className="num mt-3 text-sm text-bone-2">
+            <p className="num mt-3 text-sm leading-relaxed text-bone-2">
               {active
                 ? `${activeSets} of ${plannedSetCount(next.slots, active.logs)} sets logged · picks up where you left off`
                 : `${next.slots.length} exercises · ${totalSets} sets`}

@@ -534,6 +534,11 @@ body::after {
       box-shadow 0.18s,
       opacity 0.18s;
   }
+  @media (hover: hover) {
+    .press:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  }
   .press:active:not(:disabled) {
     transform: scale(0.96);
   }
@@ -599,6 +604,7 @@ body::after {
 
   /* Desktop: one capsule holding every destination. */
   .topnav {
+    position: relative;
     gap: 0.125rem;
     padding: 0.25rem;
     border-radius: var(--radius-pill);
@@ -609,7 +615,31 @@ body::after {
     backdrop-filter: var(--blur-glass);
     box-shadow: var(--shadow-glass);
   }
+  /* The lit capsule behind the active destination. Measured by the Nav, since
+     the items are not equal in width, and it slides rather than jumps. */
+  .topnav-knob {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: 0;
+    width: 0;
+    opacity: 0;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    transition:
+      left 0.38s var(--ease-spring),
+      width 0.38s var(--ease-spring),
+      opacity 0.2s;
+  }
+  .topnav-knob[data-ready] {
+    opacity: 1;
+  }
   .topnav-item {
+    position: relative;
+    z-index: 1;
     border-radius: var(--radius-pill);
     border: 1px solid transparent;
     padding: 0.5rem 0.875rem;
@@ -629,6 +659,12 @@ body::after {
     background-image: var(--knob-gradient);
     box-shadow: var(--shadow-knob);
     color: var(--color-oxide-2);
+  }
+  /* Once the knob has been measured it takes over from the item's own look. */
+  .topnav[data-knob] .topnav-item.is-active {
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
   }
 
   /* Phone: the two reading pages, as small pills beside the wordmark. */
@@ -664,6 +700,7 @@ body::after {
     z-index: 30;
   }
   .tabbar-list {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     height: 3.75rem;
@@ -676,42 +713,110 @@ body::after {
     backdrop-filter: var(--blur-raised);
     box-shadow: var(--shadow-raised);
   }
+  /* The lit capsule behind the active tab. --i is the tab's index, --n the
+     count; the columns are equal, so its place is arithmetic, and it slides. */
+  .tabbar-knob {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: calc(0.25rem + var(--i) * (100% - 0.5rem) / var(--n));
+    width: calc((100% - 0.5rem) / var(--n));
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    transition: left 0.38s var(--ease-spring);
+  }
+  .tabbar-knob[hidden] {
+    display: none;
+  }
   .tabbar-item {
+    position: relative;
+    z-index: 1;
     display: flex;
     height: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.125rem;
+    gap: 0.1875rem;
     border-radius: var(--radius-pill);
-    border: 1px solid transparent;
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-bone-3);
+    transition: color 0.2s;
   }
   .tabbar-item.is-active {
-    border-color: var(--edge-strong);
-    background-color: var(--fill-glass-knob);
-    background-image: var(--knob-gradient);
-    box-shadow: var(--shadow-knob);
     color: var(--color-oxide-2);
   }
   .tabbar-icon {
     width: 22px;
     height: 22px;
   }
-  /* The classic bar's indicator line. Hidden under glass, where the knob says it. */
-  .tabbar-dot {
-    display: none;
-  }
 
-  /* The summary sheet frosts the page behind it. */
+  /*
+   * The summary sheet. Positioned explicitly: left to the browser, a modal
+   * dialog on older WebKit is laid out against the top of the document, so
+   * opening it from the bottom of a long page puts its header off-screen. On a
+   * phone it rises from the bottom edge, clear of the status bar; on a wider
+   * screen it settles into the centre. It frosts the page behind it.
+   */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: calc(100% - 2rem);
+    max-width: 28rem;
+    max-height: calc(100dvh - 2rem);
+    flex-direction: column;
+    opacity: 1;
+    transform: none;
+    transition:
+      transform 0.42s var(--ease-spring),
+      opacity 0.22s ease;
+  }
+  .sheet[open] {
+    display: flex;
+  }
+  @starting-style {
+    .sheet[open] {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+    }
+  }
+  .sheet[data-closing] {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
   .sheet::backdrop {
     background: oklch(0 0 0 / 0.4);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  @starting-style {
+    .sheet[open]::backdrop {
+      opacity: 0;
+    }
+  }
+  .sheet[data-closing]::backdrop {
+    opacity: 0;
+  }
+  @media (max-width: 639.98px) {
+    .sheet {
+      inset: auto 0 0 0;
+      margin: 0 auto calc(0.75rem + env(safe-area-inset-bottom));
+      width: calc(100% - 1.5rem);
+      max-height: calc(100dvh - env(safe-area-inset-top) - 3rem);
+    }
+    @starting-style {
+      .sheet[open] {
+        transform: translateY(48px) scale(0.98);
+      }
+    }
   }
 
   /* A bar track, for volume. */
@@ -801,9 +906,6 @@ body::after {
     border-color: var(--color-line-2);
     box-shadow: none;
   }
-  [data-surface="classic"] .press:active:not(:disabled) {
-    transform: none;
-  }
 
   [data-surface="classic"] .seg {
     border-color: var(--color-line-2);
@@ -854,6 +956,18 @@ body::after {
     box-shadow: none;
     color: var(--color-on-accent);
   }
+  [data-surface="classic"] .topnav-knob {
+    top: 0;
+    bottom: 0;
+    border: 0;
+    border-radius: 0.25rem;
+    background-color: var(--color-oxide);
+    background-image: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .topnav[data-knob] .topnav-item.is-active {
+    background: none;
+  }
   [data-surface="classic"] .preset {
     border-color: var(--color-line);
     background-color: transparent;
@@ -901,29 +1015,26 @@ body::after {
   }
   [data-surface="classic"] .tabbar-item {
     gap: 0;
-    border: 0;
     border-radius: 0;
+    padding-top: 0.625rem;
     font-size: 11px;
     letter-spacing: 0.14em;
-  }
-  [data-surface="classic"] .tabbar-item.is-active {
-    background: none;
-    box-shadow: none;
   }
   [data-surface="classic"] .tabbar-icon {
     display: none;
   }
-  [data-surface="classic"] .tabbar-dot {
-    display: block;
+  /* The original's indicator line, now sliding between tabs like the knob. */
+  [data-surface="classic"] .tabbar-knob {
+    top: 1.125rem;
+    bottom: auto;
     height: 0.25rem;
     width: 1.5rem;
-    margin-bottom: 0.25rem;
+    left: calc(var(--i) * 100% / var(--n) + (100% / var(--n) - 1.5rem) / 2);
+    border: 0;
     border-radius: 9999px;
-    background-color: transparent;
-    transition: background-color 0.2s;
-  }
-  [data-surface="classic"] .tabbar-item.is-active .tabbar-dot {
     background-color: var(--color-oxide);
+    background-image: none;
+    box-shadow: none;
   }
 
   [data-surface="classic"] .floatbar {
@@ -949,6 +1060,31 @@ body::after {
     border-top: 1px solid var(--color-line);
     text-align: left;
   }
+}
+
+/* Each page fades and settles into place on arrival. src/app/template.tsx
+   re-mounts the page on every navigation, which is what restarts it. The final
+   keyframe clears the transform, so nothing fixed inside is left with a
+   transformed ancestor as its containing block. */
+.page-enter {
+  animation: page-in 0.36s var(--ease-spring) both;
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Switching mode or surface cross-fades the whole page, via the View
+   Transitions API where it exists. ThemeProvider starts it. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
 }
 
 /* No backdrop-filter, or the user asked for less transparency: the same
@@ -983,6 +1119,7 @@ body::after {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.72rem;
+  line-height: 1.25;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-bone-3);
@@ -1055,11 +1192,19 @@ select.field {
     animation: none;
   }
   .press,
-  .press:active {
+  .press:active,
+  .press:hover {
     transition: none;
     transform: none;
   }
-  .seg-knob {
+  .seg-knob,
+  .tabbar-knob,
+  .topnav-knob,
+  .sheet,
+  .sheet::backdrop {
     transition: none;
+  }
+  .page-enter {
+    animation: none;
   }
 }

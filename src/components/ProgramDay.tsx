@@ -31,7 +31,7 @@ export function ProgramDay({ day, index = 0 }: { day: Day; index?: number }) {
                   <span className="font-medium leading-tight">{ex.name}</span>
                   {ex.technicalFailure && <Tag tone="amber">technical failure</Tag>}
                 </div>
-                <span className="num text-sm text-bone-2">
+                <span className="num mt-0.5 block text-sm leading-tight text-bone-2">
                   {slot.sets} × {slot.repRange.lo}–{slot.repRange.hi}
                 </span>
               </div>

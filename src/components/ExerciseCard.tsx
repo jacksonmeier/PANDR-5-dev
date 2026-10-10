@@ -55,7 +55,7 @@ export function ExerciseCard({
           <div className="flex min-w-0 flex-1 basis-52 items-baseline gap-2">
             <span className="num shrink-0 text-xs text-bone-3">{String(index + 1).padStart(2, "0")}</span>
             <h3
-              className={`display text-2xl font-bold leading-[1.05] tracking-tight ${skipped ? "text-bone-3 line-through decoration-2" : ""}`}
+              className={`display text-2xl font-bold leading-[1.1] tracking-tight ${skipped ? "text-bone-3 line-through decoration-2" : ""}`}
             >
               {exercise.name}
             </h3>
@@ -64,7 +64,7 @@ export function ExerciseCard({
             <RirChips rir={slot.rir} size="sm" />
           </div>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3 text-sm text-bone-2">
+        <div className="mt-2.5 flex items-center justify-between gap-3 text-sm text-bone-2">
           <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <span className="num">
               {slot.sets} × {slot.repRange.lo}–{slot.repRange.hi}

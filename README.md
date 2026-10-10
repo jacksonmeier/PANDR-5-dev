@@ -72,6 +72,21 @@ recessed track with a knob that slides), and inputs use `.field`. Where `backdro
 is unsupported, or the OS asks for reduced transparency, the same surfaces render nearly
 opaque. Nothing animates continuously: a drifting backdrop would force every glass layer to
 re-blur each frame, which is the wrong trade on a phone in a gym.
+
+### Motion
+
+Both surfaces share the same motion, all of it brief and spring-eased, and all of it off
+under the OS's reduced-motion setting:
+
+- a page fades and settles into place on arrival (`src/app/template.tsx` re-mounts it);
+- the lit capsule behind the active tab slides between tabs rather than jumping, on the
+  phone tab bar, the desktop nav and every segmented control (on the original surface it is
+  the accent fill, or the tab bar's indicator line, that slides);
+- the workout summary rises from the bottom of a phone screen and settles into the centre
+  of a wider one, frosting the page behind it, and leaves the same way;
+- controls give a little when pressed and lift a hair under a pointer;
+- switching mode or surface cross-fades the whole page through the View Transitions API
+  where the browser has it.
 - **Research** and **About**: the citations and the author's own explanation, cross-linked.
 
 Everything is stored in the browser's `localStorage`. There is no backend, no account, and no

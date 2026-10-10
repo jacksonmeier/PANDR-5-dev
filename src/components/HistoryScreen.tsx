@@ -192,8 +192,8 @@ function SessionCard({
       <details className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-glass px-4 py-3.5 [&::-webkit-details-marker]:hidden">
           <div className="flex min-w-0 flex-col">
-            <span className="display truncate text-2xl font-bold uppercase leading-tight tracking-tight">{day?.label}</span>
-            <span className="num text-xs text-bone-3">{session.date}</span>
+            <span className="display truncate text-2xl font-bold uppercase leading-[1.1] tracking-tight">{day?.label}</span>
+            <span className="num mt-0.5 text-xs leading-tight text-bone-3">{session.date}</span>
           </div>
           <div className="flex shrink-0 items-center gap-3">
             {day?.kind === "rest" ? (

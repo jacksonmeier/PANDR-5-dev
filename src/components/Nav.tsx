@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { PROGRAM_VERSION } from "@/data/program";
 
 const PRIMARY = [
@@ -75,8 +75,36 @@ function Icon({ name, className = "" }: { name: IconName; className?: string }) 
   );
 }
 
+/**
+ * Where the lit capsule sits behind the active desktop destination. The items
+ * are not equal in width, so it is measured rather than computed, and measured
+ * again when the fonts land or the bar resizes, since both move the items.
+ */
+function useKnob(nav: React.RefObject<HTMLElement | null>, pathname: string) {
+  const [knob, setKnob] = useState<{ left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const el = nav.current;
+    if (!el) return;
+    const measure = () => {
+      const active = el.querySelector<HTMLElement>(".topnav-item.is-active");
+      setKnob(active ? { left: active.offsetLeft, width: active.offsetWidth } : null);
+    };
+    measure();
+    document.fonts?.ready.then(measure);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [nav, pathname]);
+
+  return knob;
+}
+
 export function Nav() {
   const pathname = usePathname() ?? "/";
+  const topnav = useRef<HTMLElement>(null);
+  const knob = useKnob(topnav, pathname);
+  const tab = PRIMARY.findIndex((item) => isActive(pathname, item.href));
 
   return (
     <>
@@ -90,7 +118,18 @@ export function Nav() {
 
         {/* Desktop: every destination in one row. The look (a glass capsule, or
             the original bare links) is the surface's, in globals.css. */}
-        <nav className="topnav hidden items-center sm:flex" aria-label="Primary">
+        <nav
+          ref={topnav}
+          className="topnav hidden items-center sm:flex"
+          aria-label="Primary"
+          data-knob={knob ? "" : undefined}
+        >
+          <span
+            aria-hidden
+            className="topnav-knob"
+            data-ready={knob ? "" : undefined}
+            style={knob ? { left: knob.left, width: knob.width } : undefined}
+          />
           {[...PRIMARY, ...SECONDARY].map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -124,26 +163,29 @@ export function Nav() {
         </nav>
       </header>
 
-      {/* Phone tab bar. Under glass it floats, inset from the edges, with icons;
-          on the classic surface it sits on the page edge with an indicator line. */}
+      {/* Phone tab bar. Under glass it floats, inset from the edges, with icons
+          and a capsule that slides to the active tab; on the classic surface it
+          sits on the page edge and the capsule is the original indicator line. */}
       <nav aria-label="Primary" className="tabbar sm:hidden">
         <ul className="tabbar-list">
-          {PRIMARY.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <li key={item.href} className="min-w-0">
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`tabbar-item display press ${active ? "is-active" : ""}`}
-                >
-                  <span className="tabbar-dot" aria-hidden />
-                  <Icon name={item.icon} className="tabbar-icon" />
-                  <span className="leading-none">{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
+          <span
+            aria-hidden
+            className="tabbar-knob"
+            hidden={tab < 0}
+            style={{ "--i": tab, "--n": PRIMARY.length } as CSSProperties}
+          />
+          {PRIMARY.map((item, i) => (
+            <li key={item.href} className="min-w-0">
+              <Link
+                href={item.href}
+                aria-current={i === tab ? "page" : undefined}
+                className={`tabbar-item display press ${i === tab ? "is-active" : ""}`}
+              >
+                <Icon name={item.icon} className="tabbar-icon" />
+                <span className="leading-none">{item.label}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
     </>
