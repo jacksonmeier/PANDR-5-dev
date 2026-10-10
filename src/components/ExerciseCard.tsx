@@ -3,6 +3,7 @@
 import type { Exercise, LoggedSet, Slot, Suggestion, Unit } from "@/lib/types";
 import { anchorIndex } from "@/lib/rir";
 import { INCREMENT } from "@/lib/units";
+import { useFlash } from "@/lib/useFlash";
 import { Card, Tag } from "./ui";
 import { RirChips } from "./RirChips";
 import { Stepper } from "./Stepper";
@@ -43,11 +44,12 @@ export function ExerciseCard({
   const performed = draft.sets.filter((s) => s.reps !== null).length;
   const done = performed === slot.sets;
   const skipped = !!draft.skipped;
+  const flash = useFlash(done && !skipped, 900);
 
   return (
     <Card
       tone={done && !skipped ? "raised" : "default"}
-      className={`reveal overflow-hidden ${skipped ? "opacity-70" : ""}`}
+      className={`reveal overflow-hidden ${skipped ? "opacity-70" : ""} ${flash ? "flash-done" : ""}`}
       style={{ animationDelay: `${index * 45}ms` }}
     >
       <div className="border-b border-bone/8 px-4 py-3.5">

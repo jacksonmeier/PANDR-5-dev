@@ -6,8 +6,8 @@ import { getExercise } from "@/data/exercises";
 import type { Draft } from "./ExerciseCard";
 import { Button } from "./ui";
 
-/** How long the sheet takes to leave, matching .sheet[data-closing] in globals.css. */
-const CLOSE_MS = 260;
+/** How long the sheet takes to leave, matching the sheet-out keyframes in globals.css. */
+const CLOSE_MS = 320;
 
 /**
  * The whole session on one screen: every lift in the order it is being worked

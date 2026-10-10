@@ -75,18 +75,32 @@ re-blur each frame, which is the wrong trade on a phone in a gym.
 
 ### Motion
 
-Both surfaces share the same motion, all of it brief and spring-eased, and all of it off
-under the OS's reduced-motion setting:
+Both surfaces share the same motion, spring-eased with a little overshoot where something
+lands:
 
-- a page fades and settles into place on arrival (`src/app/template.tsx` re-mounts it);
-- the lit capsule behind the active tab slides between tabs rather than jumping, on the
-  phone tab bar, the desktop nav and every segmented control (on the original surface it is
-  the accent fill, or the tab bar's indicator line, that slides);
-- the workout summary rises from the bottom of a phone screen and settles into the centre
-  of a wider one, frosting the page behind it, and leaves the same way;
-- controls give a little when pressed and lift a hair under a pointer;
+- a page arrives from below, sharpening out of a blur, and its cards rise in after it with
+  a stagger (`src/app/template.tsx` re-mounts the page on each navigation);
+- the tab bar rises into place on launch;
+- the lit capsule behind the active tab slides between tabs with a bounce and squishes
+  toward where it is going, on the phone tab bar, the desktop nav and every segmented
+  control (on the original surface it is the accent fill, or the tab bar's indicator line,
+  that slides);
+- the workout summary rises from below the bottom edge of a phone screen and lands with a
+  bounce, or settles into the centre of a wider one, frosting the page behind it, and
+  leaves the same way;
+- controls press down at once and spring back on release;
+- a set just logged, and an exercise just finished, send out a ring of chalk;
+- volume bars grow out from nothing when they appear;
 - switching mode or surface cross-fades the whole page through the View Transitions API
   where the browser has it.
+
+Under the OS's reduced-motion setting nothing slides, scales or springs, but a change still
+cross-fades rather than snapping, which is how iOS itself behaves with Reduce Motion on.
+
+Two things decide whether you see any of it on an installed phone app. The app runs the
+build it precached: a new deploy is fetched in the background and applies on the next cold
+launch, so after an update fully close the app and open it twice. And iOS Reduce Motion,
+under Settings → Accessibility → Motion, turns the movement into cross-fades.
 - **Research** and **About**: the citations and the author's own explanation, cross-linked.
 
 Everything is stored in the browser's `localStorage`. There is no backend, no account, and no

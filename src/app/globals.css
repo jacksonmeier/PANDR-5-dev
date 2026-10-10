@@ -268,19 +268,27 @@
   --font-body: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
+  /* Settles without overshoot, and with: the second is what makes a knob or a
+     sheet land like something with weight. */
   --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --animate-rise: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-rise: rise 0.7s var(--ease-spring) both;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
 
+  /* A card arrives from below, sharpening as it comes. The final keyframe
+     clears the transform and filter, so nothing inside is left with a
+     transformed ancestor as its containing block. */
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(10px) scale(0.985);
+      transform: translateY(28px) scale(0.96);
+      filter: blur(8px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: none;
+      filter: none;
     }
   }
   @keyframes pulse-ring {
@@ -526,8 +534,9 @@ body::after {
 
   /* A press, the Apple way: the whole control gives a little. */
   .press {
+    touch-action: manipulation;
     transition:
-      transform 0.18s var(--ease-spring),
+      transform 0.4s var(--ease-bounce),
       background-color 0.18s,
       border-color 0.18s,
       color 0.18s,
@@ -536,11 +545,13 @@ body::after {
   }
   @media (hover: hover) {
     .press:hover:not(:disabled) {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
   }
+  /* Down at once; the spring is on the way back up. */
   .press:active:not(:disabled) {
-    transform: scale(0.96);
+    transform: scale(0.92);
+    transition-duration: 0.08s;
   }
 
   /* A theme preset tile. */
@@ -576,7 +587,7 @@ body::after {
     background-color: var(--fill-glass-knob);
     background-image: var(--knob-gradient);
     box-shadow: var(--shadow-knob);
-    transition: left 0.3s var(--ease-spring);
+    transition: left 0.5s var(--ease-bounce);
   }
   .seg-item {
     position: relative;
@@ -625,14 +636,22 @@ body::after {
     width: 0;
     opacity: 0;
     border-radius: var(--radius-pill);
+    transition:
+      left 0.55s var(--ease-bounce),
+      width 0.55s var(--ease-bounce),
+      opacity 0.2s;
+  }
+  /* The lit face. Re-mounted on every move so the squish plays again. */
+  .topnav-knob-face,
+  .tabbar-knob-face {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
     border: 1px solid var(--edge-strong);
     background-color: var(--fill-glass-knob);
     background-image: var(--knob-gradient);
     box-shadow: var(--shadow-knob);
-    transition:
-      left 0.38s var(--ease-spring),
-      width 0.38s var(--ease-spring),
-      opacity 0.2s;
+    animation: squish 0.55s var(--ease-spring) both;
   }
   .topnav-knob[data-ready] {
     opacity: 1;
@@ -698,6 +717,9 @@ body::after {
     right: 0.75rem;
     bottom: calc(0.75rem + env(safe-area-inset-bottom));
     z-index: 30;
+    /* Rises into place on launch. */
+    animation: tabbar-in 0.7s var(--ease-bounce) both;
+    animation-delay: 0.1s;
   }
   .tabbar-list {
     position: relative;
@@ -722,11 +744,7 @@ body::after {
     left: calc(0.25rem + var(--i) * (100% - 0.5rem) / var(--n));
     width: calc((100% - 0.5rem) / var(--n));
     border-radius: var(--radius-pill);
-    border: 1px solid var(--edge-strong);
-    background-color: var(--fill-glass-knob);
-    background-image: var(--knob-gradient);
-    box-shadow: var(--shadow-knob);
-    transition: left 0.38s var(--ease-spring);
+    transition: left 0.55s var(--ease-bounce);
   }
   .tabbar-knob[hidden] {
     display: none;
@@ -760,8 +778,10 @@ body::after {
    * The summary sheet. Positioned explicitly: left to the browser, a modal
    * dialog on older WebKit is laid out against the top of the document, so
    * opening it from the bottom of a long page puts its header off-screen. On a
-   * phone it rises from the bottom edge, clear of the status bar; on a wider
-   * screen it settles into the centre. It frosts the page behind it.
+   * phone it rises from below the screen edge and lands with a little bounce;
+   * on a wider screen it settles into the centre. It frosts the page behind
+   * it. The exit is a keyframe too: the dialog is marked closing, given its
+   * exit, and only then closed, in WorkoutSummary.
    */
   .sheet {
     position: fixed;
@@ -771,39 +791,22 @@ body::after {
     max-width: 28rem;
     max-height: calc(100dvh - 2rem);
     flex-direction: column;
-    opacity: 1;
-    transform: none;
-    transition:
-      transform 0.42s var(--ease-spring),
-      opacity 0.22s ease;
   }
   .sheet[open] {
     display: flex;
+    animation: sheet-in-centre 0.55s var(--ease-bounce) both;
   }
-  @starting-style {
-    .sheet[open] {
-      opacity: 0;
-      transform: translateY(28px) scale(0.98);
-    }
-  }
-  .sheet[data-closing] {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  .sheet::backdrop {
+  .sheet[open]::backdrop {
     background: oklch(0 0 0 / 0.4);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    opacity: 1;
-    transition: opacity 0.3s ease;
+    animation: fade-in 0.4s ease both;
   }
-  @starting-style {
-    .sheet[open]::backdrop {
-      opacity: 0;
-    }
+  .sheet[data-closing] {
+    animation: sheet-out-centre 0.32s ease-in forwards;
   }
   .sheet[data-closing]::backdrop {
-    opacity: 0;
+    animation: fade-out 0.32s ease forwards;
   }
   @media (max-width: 639.98px) {
     .sheet {
@@ -812,10 +815,11 @@ body::after {
       width: calc(100% - 1.5rem);
       max-height: calc(100dvh - env(safe-area-inset-top) - 3rem);
     }
-    @starting-style {
-      .sheet[open] {
-        transform: translateY(48px) scale(0.98);
-      }
+    .sheet[open] {
+      animation: sheet-in-bottom 0.65s var(--ease-bounce) both;
+    }
+    .sheet[data-closing] {
+      animation: sheet-out-bottom 0.32s ease-in forwards;
     }
   }
 
@@ -959,8 +963,11 @@ body::after {
   [data-surface="classic"] .topnav-knob {
     top: 0;
     bottom: 0;
-    border: 0;
     border-radius: 0.25rem;
+  }
+  [data-surface="classic"] .topnav-knob-face,
+  [data-surface="classic"] .tabbar-knob-face {
+    border: 0;
     background-color: var(--color-oxide);
     background-image: none;
     box-shadow: none;
@@ -1030,11 +1037,7 @@ body::after {
     height: 0.25rem;
     width: 1.5rem;
     left: calc(var(--i) * 100% / var(--n) + (100% / var(--n) - 1.5rem) / 2);
-    border: 0;
     border-radius: 9999px;
-    background-color: var(--color-oxide);
-    background-image: none;
-    box-shadow: none;
   }
 
   [data-surface="classic"] .floatbar {
@@ -1062,17 +1065,30 @@ body::after {
   }
 }
 
-/* Each page fades and settles into place on arrival. src/app/template.tsx
+/* Each page arrives from below, sharpening as it comes. src/app/template.tsx
    re-mounts the page on every navigation, which is what restarts it. The final
-   keyframe clears the transform, so nothing fixed inside is left with a
-   transformed ancestor as its containing block. */
+   keyframe clears the transform and filter, so nothing fixed inside is left
+   with a transformed ancestor as its containing block. */
 .page-enter {
-  animation: page-in 0.36s var(--ease-spring) both;
+  animation: page-in 0.6s var(--ease-spring) both;
 }
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(22px) scale(0.98);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes tabbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(140%);
   }
   to {
     opacity: 1;
@@ -1080,11 +1096,112 @@ body::after {
   }
 }
 
+/* A knob stretches toward where it is going, then settles. */
+@keyframes squish {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scaleX(1.3) scaleY(0.88);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes sheet-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheet-out-bottom {
+  to {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+}
+@keyframes sheet-in-centre {
+  from {
+    opacity: 0;
+    transform: translateY(48px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheet-out-centre {
+  to {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* A set just logged, an exercise just finished: a ring of chalk spreads out
+   from it and fades. WorkoutScreen's rows and cards add the class for the
+   duration, only on the change, so a resumed session does not light up. */
+.flash-logged {
+  animation: flash-logged 0.8s ease-out both;
+}
+.flash-done {
+  animation: flash-done 0.9s ease-out both;
+}
+@keyframes flash-logged {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-chalk) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 16px color-mix(in oklab, var(--color-chalk) 0%, transparent);
+  }
+}
+@keyframes flash-done {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in oklab, var(--color-chalk) 55%, transparent),
+      0 0 40px 0 color-mix(in oklab, var(--color-chalk) 35%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 24px color-mix(in oklab, var(--color-chalk) 0%, transparent),
+      0 0 0 0 color-mix(in oklab, var(--color-chalk) 0%, transparent);
+  }
+}
+
+/* Volume bars grow out from nothing when they appear, where the browser has
+   @starting-style; elsewhere they are simply there. */
+.bar {
+  width: var(--w);
+  transition: width 0.9s var(--ease-spring);
+}
+@starting-style {
+  .bar {
+    width: 0;
+  }
+}
+
 /* Switching mode or surface cross-fades the whole page, via the View
    Transitions API where it exists. ThemeProvider starts it. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.45s;
+  animation-duration: 0.6s;
 }
 
 /* No backdrop-filter, or the user asked for less transparency: the same
@@ -1184,11 +1301,19 @@ select.field {
   outline-offset: 2px;
 }
 
+/* Reduced motion: nothing slides, scales or springs, but a change still
+   cross-fades rather than snapping, which is how the OS itself behaves. */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    animation: none;
+  .reveal,
+  .page-enter {
+    animation: fade-in 0.3s ease both;
   }
-  .pulse-ring {
+  .pulse-ring,
+  .tabbar,
+  .topnav-knob-face,
+  .tabbar-knob-face,
+  .flash-logged,
+  .flash-done {
     animation: none;
   }
   .press,
@@ -1200,11 +1325,13 @@ select.field {
   .seg-knob,
   .tabbar-knob,
   .topnav-knob,
-  .sheet,
-  .sheet::backdrop {
+  .bar {
     transition: none;
   }
-  .page-enter {
-    animation: none;
+  .sheet[open] {
+    animation: fade-in 0.25s ease both;
+  }
+  .sheet[data-closing] {
+    animation: fade-out 0.2s ease forwards;
   }
 }

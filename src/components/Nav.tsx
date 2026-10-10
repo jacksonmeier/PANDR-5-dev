@@ -129,7 +129,10 @@ export function Nav() {
             className="topnav-knob"
             data-ready={knob ? "" : undefined}
             style={knob ? { left: knob.left, width: knob.width } : undefined}
-          />
+          >
+            {/* Keyed on the page, so the face re-mounts and squishes on every move. */}
+            <span key={pathname} className="topnav-knob-face" />
+          </span>
           {[...PRIMARY, ...SECONDARY].map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -173,7 +176,9 @@ export function Nav() {
             className="tabbar-knob"
             hidden={tab < 0}
             style={{ "--i": tab, "--n": PRIMARY.length } as CSSProperties}
-          />
+          >
+            <span key={tab} className="tabbar-knob-face" />
+          </span>
           {PRIMARY.map((item, i) => (
             <li key={item.href} className="min-w-0">
               <Link

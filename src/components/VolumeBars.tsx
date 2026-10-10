@@ -52,7 +52,10 @@ export function VolumeBar({
           style={{ left: pct(OPTIMAL_RANGE.lo), width: pct(OPTIMAL_RANGE.hi - OPTIMAL_RANGE.lo) }}
           aria-hidden
         />
-        <div className={`absolute inset-y-0 left-0 rounded-pill ${tone} transition-[width] duration-500`} style={{ width: pct(value) }} />
+        <div
+          className={`bar absolute inset-y-0 left-0 rounded-pill ${tone}`}
+          style={{ "--w": pct(value) } as React.CSSProperties}
+        />
         {t.total > 0 && (
           <div className="absolute inset-y-0 w-0.5 bg-oxide" style={{ left: pct(t.total) }} aria-hidden />
         )}
@@ -116,7 +119,10 @@ export function GroupOverview({ totals }: { totals: MuscleTotals }) {
               {GROUP_NAMES[g]}
             </span>
             <div className="track h-2.5">
-              <div className={`h-full rounded-pill ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`} style={{ width: `${pct}%` }} />
+              <div
+                className={`bar h-full rounded-pill ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`}
+                style={{ "--w": `${pct}%` } as React.CSSProperties}
+              />
             </div>
             <span className="num text-xs text-bone-2">
               {fmt(sum)}<span className="text-bone-3">/{fmt(target)}</span>

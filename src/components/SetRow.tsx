@@ -2,6 +2,7 @@
 
 import type { LoggedSet, RepRange, RirTarget } from "@/lib/types";
 import { RIR_META } from "@/lib/rir";
+import { useFlash } from "@/lib/useFlash";
 import { Stepper } from "./Stepper";
 
 /* The options name themselves, so the select needs no label beside it on a phone. */
@@ -31,10 +32,12 @@ export function SetRow({
 }) {
   const meta = RIR_META[target];
   const performed = value.reps !== null;
+  const flash = useFlash(performed, 800);
   return (
     <div
       className={[
         "glass-inset grid grid-cols-[1.25rem_2.5rem_minmax(0,1fr)_auto] items-center gap-1.5 px-2.5 py-2 transition-colors sm:grid-cols-[1.5rem_2.75rem_1fr_auto] sm:gap-2",
+        flash ? "flash-logged" : "",
         isAnchor
           ? "border-oxide/50 bg-oxide-deep/30"
           : performed
