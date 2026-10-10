@@ -75,8 +75,8 @@ export function ExerciseCard({
           </span>
           <label
             className={[
-              "glass-inset press flex h-9 shrink-0 cursor-pointer select-none items-center gap-2 rounded-full pl-2.5 pr-3 text-xs font-bold uppercase tracking-[0.12em]",
-              skipped ? "border-oxide/60 bg-oxide-deep/40 text-oxide-2" : "text-bone-2 hover:bg-bone/8",
+              "btn-ghost press flex h-9 shrink-0 cursor-pointer select-none items-center gap-2 rounded-pill pl-2.5 pr-3 text-xs font-bold uppercase tracking-[0.12em]",
+              skipped ? "border-oxide/60 bg-oxide-deep/40 text-oxide-2" : "text-bone-2",
             ].join(" ")}
           >
             <input

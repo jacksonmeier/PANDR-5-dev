@@ -2,6 +2,11 @@ import { clampChroma, hexToOklch, maxChroma, oklchToHex } from "./color";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type ResolvedMode = "light" | "dark";
+/**
+ * The material. `glass` is frosted and translucent over a colourful scene;
+ * `classic` is the app's original flat, bordered look. See SURFACE in globals.css.
+ */
+export type Surface = "glass" | "classic";
 
 export interface Theme {
   /** Accent colour as picked, e.g. buttons, the active nav pill, the anchor bar. */
@@ -9,6 +14,8 @@ export interface Theme {
   /** Surface tint as picked. Only its hue and saturation are used. */
   tint: string;
   mode: ThemeMode;
+  /** Absent on a theme saved before the switch existed, which means glass. */
+  surface?: Surface;
 }
 
 /** Reproduces the original hand-picked palette. */
@@ -16,7 +23,14 @@ export const DEFAULT_THEME: Theme = {
   accent: "#d9463f",
   tint: "#ce9c17",
   mode: "system",
+  surface: "glass",
 };
+
+export const DEFAULT_SURFACE: Surface = "glass";
+
+export function resolveSurface(theme: Pick<Theme, "surface">): Surface {
+  return theme.surface === "classic" ? "classic" : DEFAULT_SURFACE;
+}
 
 export interface Preset {
   id: string;
@@ -135,6 +149,7 @@ export const PAINT_CACHE_KEY = "pandr5-theme";
 
 export interface PaintCache {
   m: ThemeMode;
+  s: Surface;
   ha: number;
   ca: number;
   ht: number;
@@ -143,13 +158,21 @@ export interface PaintCache {
 
 export function paintCache(theme: Theme): PaintCache {
   const v = themeVars(theme);
-  return { m: theme.mode, ha: v.hAccent, ca: v.cAccent, ht: v.hTint, ts: v.tintSat };
+  return {
+    m: theme.mode,
+    s: resolveSurface(theme),
+    ha: v.hAccent,
+    ca: v.cAccent,
+    ht: v.hTint,
+    ts: v.tintSat,
+  };
 }
 
-/** Write the four custom properties and the mode attribute onto <html>. */
+/** Write the four custom properties, the mode and the surface onto <html>. */
 export function applyThemeVars(root: HTMLElement, theme: Theme, mode: ResolvedMode): void {
   const v = themeVars(theme);
   root.dataset.mode = mode;
+  root.dataset.surface = resolveSurface(theme);
   root.style.setProperty("--h-accent", String(v.hAccent));
   root.style.setProperty("--c-accent", String(v.cAccent));
   root.style.setProperty("--h-tint", String(v.hTint));
@@ -166,6 +189,7 @@ var r=document.documentElement,t={};
 try{t=JSON.parse(localStorage.getItem(${JSON.stringify(PAINT_CACHE_KEY)}))||{}}catch(e){}
 var m=t.m==="light"||t.m==="dark"?t.m:(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
 r.dataset.mode=m;
+r.dataset.surface=t.s==="classic"?"classic":"glass";
 if(typeof t.ha==="number"){
 r.style.setProperty("--h-accent",t.ha);
 r.style.setProperty("--c-accent",t.ca);

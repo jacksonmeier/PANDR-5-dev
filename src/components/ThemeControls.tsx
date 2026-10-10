@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Theme, ThemeMode } from "@/lib/theme";
+import type { Surface, Theme, ThemeMode } from "@/lib/theme";
 import {
   DEFAULT_THEME,
   PRESETS,
   accentSwatch,
   lineSwatch,
   resolveMode,
+  resolveSurface,
   surfaceSwatch,
   textSwatch,
 } from "@/lib/theme";
@@ -18,6 +19,11 @@ const MODES: { value: ThemeMode; label: string }[] = [
   { value: "light", label: "Light" },
   { value: "dark", label: "Dark" },
   { value: "system", label: "System" },
+];
+
+const SURFACES: { value: Surface; label: string }[] = [
+  { value: "glass", label: "Glass" },
+  { value: "classic", label: "Original" },
 ];
 
 export function ThemeControls() {
@@ -34,6 +40,7 @@ export function ThemeControls() {
   }, []);
 
   const resolved = resolveMode(theme.mode, prefersLight);
+  const surface = resolveSurface(theme);
   const set = (patch: Partial<Theme>) =>
     updateSettings({ theme: { ...theme, ...patch } });
 
@@ -47,13 +54,29 @@ export function ThemeControls() {
         <div>
           <Eyebrow>Appearance</Eyebrow>
           <p className="mt-1 text-sm text-bone-2">
-            Two colours drive everything: an accent, and a hue that tints the glass and the light behind it.
+            A surface, a mode, and two colours: an accent, and a hue that tints everything else.
           </p>
         </div>
         <Preview theme={theme} mode={resolved} />
       </div>
 
       <div className="mt-5 grid gap-5">
+        <div>
+          <span className="eyebrow">Surface</span>
+          <Segmented<Surface>
+            label="Surface"
+            className="mt-2"
+            value={surface}
+            onChange={(next) => set({ surface: next })}
+            options={SURFACES}
+          />
+          <p className="mt-1.5 text-xs text-bone-3">
+            {surface === "glass"
+              ? "Frosted, translucent panels over a wash of your colours."
+              : "The original look: flat, bordered panels on a plain page."}
+          </p>
+        </div>
+
         <div>
           <span className="eyebrow">Mode</span>
           <Segmented<ThemeMode>
@@ -82,10 +105,7 @@ export function ThemeControls() {
                   type="button"
                   onClick={() => set({ accent: p.accent, tint: p.tint })}
                   aria-pressed={active}
-                  className={[
-                    "glass-inset press flex min-h-16 flex-col items-center justify-center gap-1.5 p-2",
-                    active ? "border-oxide/70 bg-oxide-deep/40" : "hover:bg-bone/8",
-                  ].join(" ")}
+                  className="preset press flex min-h-16 flex-col items-center justify-center gap-1.5 p-2"
                 >
                   <span className="flex overflow-hidden rounded-full border border-bone/15 shadow-[0_2px_6px_oklch(0_0_0/0.25)]">
                     <span

@@ -15,16 +15,20 @@
  * The defaults below reproduce the original hand-picked palette to ~1/255 per
  * channel: accent #d9463f, warm tint at hue 85, dark mode.
  *
- * GLASS
- * -----
- * Surfaces are frosted glass in the Apple sense: a translucent fill over a soft,
- * colourful scene, blurred and saturated through backdrop-filter, with a hairline
- * edge, a specular highlight along the top, and a diffuse drop shadow for depth.
- * The material is one set of tokens (--glass-*) that flips with the mode, and
- * three classes: .glass (a panel), .glass-raised (a floating bar or sheet) and
- * .glass-inset (a recessed well, no blur, for rows and fields inside a panel).
- * The scene behind it (.scene) is drawn from the accent and tint hues, so the
- * glass always refracts the user's own colours.
+ * SURFACE
+ * -------
+ * A third choice picks the material. The default, glass, is frosted in the Apple
+ * sense: a translucent fill over a soft, colourful scene, blurred and saturated
+ * through backdrop-filter, with a hairline edge, a specular highlight along the
+ * top and a diffuse shadow. The alternative, [data-surface="classic"], is the
+ * app's original look: flat, bordered panels on a plain page.
+ *
+ * The rule that makes the switch possible: anything that differs between the two
+ * lives in a token (the radii, the fills) or in a role class below (.glass,
+ * .btn-ghost, .tabbar, ...), never in a utility class on the element. The glass
+ * rules come first; the classic block at the end of the components layer
+ * overrides them. Utilities still win over both, so a card can carry its own
+ * border colour on either surface.
  */
 
 :root {
@@ -32,6 +36,47 @@
   --c-accent: 0.185;
   --h-tint: 84.6;
   --tint-sat: 1;
+
+  /* Space the sticky workout bar keeps clear above the phone tab bar. */
+  --tabbar-clear: 5.25rem;
+  /* Horizontal padding of a button: a capsule wants a little more than a box. */
+  --btn-px: 1.25rem;
+
+  /* The glass fills and shadows, assembled once from the mode's tokens below.
+     Custom properties resolve per element, so these pick up whichever mode is
+     active without being repeated in each ladder. */
+  --accent-oklch: var(--l-accent) var(--c-accent) var(--h-accent);
+  --fill-glass: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a));
+  --fill-glass-raised: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a-raised));
+  --fill-glass-knob: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / calc(var(--glass-a-raised) + 0.18));
+  --fill-inset: oklch(var(--glass-inset-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-inset-a));
+  --sheen-gradient: linear-gradient(
+    150deg,
+    oklch(1 0 0 / var(--sheen)) 0%,
+    oklch(1 0 0 / 0) 38%,
+    oklch(1 0 0 / 0) 70%,
+    oklch(1 0 0 / calc(var(--sheen) * 0.5)) 100%
+  );
+  --knob-gradient: linear-gradient(180deg, oklch(1 0 0 / calc(var(--sheen) * 1.5)), oklch(1 0 0 / 0) 70%);
+  --shadow-glass:
+    inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
+    inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
+    0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.4)),
+    0 14px 36px -14px oklch(0 0 0 / var(--shadow-a));
+  --shadow-raised:
+    inset 0 1px 0 0 oklch(1 0 0 / calc(var(--spec) * 1.1)),
+    inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
+    0 2px 6px oklch(0 0 0 / calc(var(--shadow-float-a) * 0.35)),
+    0 24px 60px -16px oklch(0 0 0 / var(--shadow-float-a));
+  --shadow-knob:
+    inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
+    0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.5)),
+    0 6px 16px -6px oklch(0 0 0 / var(--shadow-a));
+  --shadow-inset:
+    inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6)),
+    0 1px 0 oklch(1 0 0 / calc(var(--spec) * 0.5));
+  --blur-glass: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  --blur-raised: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
 }
 
 /* Dark is the default, and also what [data-mode="dark"] selects. */
@@ -78,6 +123,8 @@
   --c-hazard: 0.059;
 
   --grain: 0.04;
+  /* The classic surface's accent glow at the top of the page. */
+  --glow: 0.08;
 
   /* Glass material. Fill lightness sits a step above the page so a panel reads
      as lifted even where nothing colourful is behind it. */
@@ -149,6 +196,7 @@
   --c-hazard: 0.13;
 
   --grain: 0.02;
+  --glow: 0.06;
 
   --glass-l: 0.995;
   --glass-c: 0.004;
@@ -204,10 +252,12 @@
      saturated in light mode, because a pale stripe on white reads as nothing. */
   --color-hazard: oklch(var(--l-hazard) var(--c-hazard) 81);
 
-  /* Corner radii of the glass. A panel, a well inside it, and a chip. */
+  /* Corner radii. A panel, a well inside it, a chip, and a capsule. The classic
+     surface overrides all four below, which is how buttons stop being pills. */
   --radius-glass: 1.625rem;
   --radius-well: 1.125rem;
   --radius-chip: 0.625rem;
+  --radius-pill: 9999px;
 
   /* Faces are self-hosted via @fontsource; see the imports in src/app/layout.tsx.
      Loaded: Big Shoulders Display 700/800; Instrument Sans 400/500/600/700 + 400 italic;
@@ -246,6 +296,16 @@
   }
 }
 
+/* The original look: square-ish corners and the bar sitting on the page edge. */
+[data-surface="classic"] {
+  --radius-glass: 0.5rem;
+  --radius-well: 0.375rem;
+  --radius-chip: 0.25rem;
+  --radius-pill: 0.375rem;
+  --tabbar-clear: 4.75rem;
+  --btn-px: 1rem;
+}
+
 html {
   background: var(--color-ink);
 }
@@ -260,8 +320,19 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Classic: one accent glow at the top of the page, nothing else behind the panels. */
+[data-surface="classic"] body {
+  background:
+    radial-gradient(
+      1200px 600px at 50% -200px,
+      oklch(var(--accent-oklch) / var(--glow)),
+      transparent 60%
+    ),
+    var(--color-ink);
+}
+
 /*
- * The scene behind the glass. Three soft orbs: two in the accent hue, one in the
+ * The scene behind the glass. Four soft orbs: two in the accent hue, two in the
  * tint hue, placed so a panel anywhere on a tall page has some colour under it.
  * Fixed, so the colour stays put while the glass scrolls over it, which is what
  * makes the blur read as refraction rather than a flat tint. Drawn with radial
@@ -294,6 +365,9 @@ body {
       transparent 70%
     );
 }
+[data-surface="classic"] .scene {
+  display: none;
+}
 
 /* Fine grain so the soft scene doesn't band. Sits over the orbs, under the glass. */
 body::before {
@@ -324,28 +398,25 @@ body::after {
   z-index: 40;
   pointer-events: none;
 }
+[data-surface="classic"] body::after {
+  background: var(--color-ink);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 
 @layer components {
-  /* A glass panel: the card, the tile, the pill. */
+  /* ---- Materials ------------------------------------------------------- */
+
+  /* A glass panel: the card, the tile. */
   .glass {
     position: relative;
     border-radius: var(--radius-glass);
     border: 1px solid var(--edge);
-    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a));
-    background-image: linear-gradient(
-      150deg,
-      oklch(1 0 0 / var(--sheen)) 0%,
-      oklch(1 0 0 / 0) 38%,
-      oklch(1 0 0 / 0) 70%,
-      oklch(1 0 0 / calc(var(--sheen) * 0.5)) 100%
-    );
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-    box-shadow:
-      inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
-      inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
-      0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.4)),
-      0 14px 36px -14px oklch(0 0 0 / var(--shadow-a));
+    background-color: var(--fill-glass);
+    background-image: var(--sheen-gradient);
+    -webkit-backdrop-filter: var(--blur-glass);
+    backdrop-filter: var(--blur-glass);
+    box-shadow: var(--shadow-glass);
   }
 
   /* A floating bar or sheet: more opaque, so what is underneath stays legible
@@ -354,45 +425,42 @@ body::after {
     position: relative;
     border-radius: var(--radius-glass);
     border: 1px solid var(--edge-strong);
-    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-a-raised));
-    background-image: linear-gradient(
-      150deg,
-      oklch(1 0 0 / calc(var(--sheen) * 1.2)) 0%,
-      oklch(1 0 0 / 0) 40%,
-      oklch(1 0 0 / 0) 70%,
-      oklch(1 0 0 / calc(var(--sheen) * 0.5)) 100%
-    );
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
-    backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
-    box-shadow:
-      inset 0 1px 0 0 oklch(1 0 0 / calc(var(--spec) * 1.1)),
-      inset 0 -1px 0 0 oklch(0 0 0 / var(--spec-low)),
-      0 2px 6px oklch(0 0 0 / calc(var(--shadow-float-a) * 0.35)),
-      0 24px 60px -16px oklch(0 0 0 / var(--shadow-float-a));
+    background-color: var(--fill-glass-raised);
+    background-image: var(--sheen-gradient);
+    -webkit-backdrop-filter: var(--blur-raised);
+    backdrop-filter: var(--blur-raised);
+    box-shadow: var(--shadow-raised);
   }
 
-  /* A recessed well inside a panel: a row, a field, a track. No blur of its
+  /* A recessed well inside a panel: a row, a tile, a timer. No blur of its
      own, so a card full of them costs one compositing layer, not twenty. */
   .glass-inset {
     border-radius: var(--radius-well);
     border: 1px solid var(--edge);
-    background-color: oklch(var(--glass-inset-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-inset-a));
-    box-shadow:
-      inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6)),
-      0 1px 0 oklch(1 0 0 / calc(var(--spec) * 0.5));
+    background-color: var(--fill-inset);
+    box-shadow: var(--shadow-inset);
   }
 
-  /* The selected segment, the knob of a control: opaque-ish, lit, no blur. */
+  /* The lit, selected thing: a knob, an active tab. Opaque-ish, no blur. */
   .glass-knob {
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     border: 1px solid var(--edge-strong);
-    background-color: oklch(var(--glass-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / calc(var(--glass-a-raised) + 0.18));
-    background-image: linear-gradient(180deg, oklch(1 0 0 / calc(var(--sheen) * 1.5)), oklch(1 0 0 / 0) 70%);
-    box-shadow:
-      inset 0 1px 0 0 oklch(1 0 0 / var(--spec)),
-      0 1px 2px oklch(0 0 0 / calc(var(--shadow-a) * 0.5)),
-      0 6px 16px -6px oklch(0 0 0 / var(--shadow-a));
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
   }
+
+  /* The one card on a screen that wants the eye: the accent shows at its edge. */
+  .glass-accent {
+    border-color: oklch(var(--accent-oklch) / 0.5);
+    box-shadow: var(--shadow-glass), 0 18px 48px -18px var(--color-oxide);
+  }
+  .glass-amber {
+    border-color: color-mix(in oklab, var(--color-amber) 60%, transparent);
+    box-shadow: var(--shadow-glass), 0 18px 48px -18px var(--color-amber);
+  }
+
+  /* ---- Controls -------------------------------------------------------- */
 
   /* Solid accent with a glass sheen: the one prominent button on a screen. */
   .btn-primary {
@@ -404,7 +472,7 @@ body::after {
       inset 0 1px 0 oklch(1 0 0 / 0.38),
       inset 0 -1px 0 oklch(0 0 0 / 0.2),
       0 1px 2px oklch(0 0 0 / 0.25),
-      0 12px 28px -10px oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.7);
+      0 12px 28px -10px oklch(var(--accent-oklch) / 0.7);
   }
   .btn-primary:hover:not(:disabled) {
     background-color: var(--color-oxide-hover);
@@ -412,22 +480,47 @@ body::after {
   .btn-primary:active:not(:disabled) {
     background-color: var(--color-oxide-active);
   }
+  .btn-ghost {
+    border: 1px solid var(--edge);
+    background-color: var(--fill-inset);
+    color: var(--color-bone);
+    box-shadow: var(--shadow-inset);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-bone) 10%, transparent);
+  }
+  .btn-danger {
+    border: 1px solid oklch(var(--accent-oklch) / 0.5);
+    background-color: var(--fill-inset);
+    color: var(--color-oxide-2);
+    box-shadow: var(--shadow-inset);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-oxide-deep) 50%, transparent);
+  }
+  .btn-subtle {
+    color: var(--color-bone-2);
+  }
+  .btn-subtle:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-bone) 8%, transparent);
+    color: var(--color-bone);
+  }
 
   /* Form controls as recessed glass. */
   .field {
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     border: 1px solid var(--edge);
-    background-color: oklch(var(--glass-inset-l) calc(var(--glass-c) * var(--tint-sat)) var(--h-tint) / var(--glass-inset-a));
+    background-color: var(--fill-inset);
     color: var(--color-bone);
     box-shadow: inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6));
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   .field:focus-within,
   .field:focus {
-    border-color: oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.7);
+    border-color: oklch(var(--accent-oklch) / 0.7);
     box-shadow:
       inset 0 1px 2px oklch(0 0 0 / calc(var(--spec-low) * 0.6)),
-      0 0 0 3px oklch(var(--l-accent) var(--c-accent) var(--h-accent) / 0.22);
+      0 0 0 3px oklch(var(--accent-oklch) / 0.22);
     outline: none;
   }
 
@@ -443,6 +536,418 @@ body::after {
   }
   .press:active:not(:disabled) {
     transform: scale(0.96);
+  }
+
+  /* A theme preset tile. */
+  .preset {
+    border-radius: var(--radius-well);
+    border: 1px solid var(--edge);
+    background-color: var(--fill-inset);
+    box-shadow: var(--shadow-inset);
+  }
+  .preset:hover {
+    background-color: color-mix(in oklab, var(--color-bone) 8%, transparent);
+  }
+  .preset[aria-pressed="true"] {
+    border-color: oklch(var(--accent-oklch) / 0.7);
+    background-color: color-mix(in oklab, var(--color-oxide-deep) 40%, transparent);
+  }
+
+  /* A segmented control: a recessed track with a lit knob that slides. */
+  .seg {
+    position: relative;
+    padding: 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge);
+    background-color: var(--fill-inset);
+    box-shadow: var(--shadow-inset);
+  }
+  .seg-knob {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    transition: left 0.3s var(--ease-spring);
+  }
+  .seg-item {
+    position: relative;
+    z-index: 1;
+    border-radius: var(--radius-pill);
+    color: var(--color-bone-3);
+    transition: color 0.2s;
+  }
+  .seg-item:hover {
+    color: var(--color-bone-2);
+  }
+  .seg-item[data-selected="true"] {
+    color: var(--color-bone);
+  }
+
+  /* ---- Chrome ---------------------------------------------------------- */
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+  }
+
+  /* Desktop: one capsule holding every destination. */
+  .topnav {
+    gap: 0.125rem;
+    padding: 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge);
+    background-color: var(--fill-glass);
+    background-image: var(--sheen-gradient);
+    -webkit-backdrop-filter: var(--blur-glass);
+    backdrop-filter: var(--blur-glass);
+    box-shadow: var(--shadow-glass);
+  }
+  .topnav-item {
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-bone-2);
+  }
+  .topnav-item:hover {
+    background-color: color-mix(in oklab, var(--color-bone) 8%, transparent);
+    color: var(--color-bone);
+  }
+  .topnav-item.is-active {
+    border-color: var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    color: var(--color-oxide-2);
+  }
+
+  /* Phone: the two reading pages, as small pills beside the wordmark. */
+  .subnav {
+    gap: 0.375rem;
+  }
+  .subnav-item {
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge);
+    background-color: var(--fill-inset);
+    box-shadow: var(--shadow-inset);
+    padding: 0.375rem 0.75rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-bone-2);
+  }
+  .subnav-item.is-active {
+    border-color: var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    color: var(--color-oxide-2);
+  }
+
+  /* Phone: a floating glass tab bar, inset from the edges like iOS. */
+  .tabbar {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    z-index: 30;
+  }
+  .tabbar-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: 3.75rem;
+    padding: 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge-strong);
+    background-color: var(--fill-glass-raised);
+    background-image: var(--sheen-gradient);
+    -webkit-backdrop-filter: var(--blur-raised);
+    backdrop-filter: var(--blur-raised);
+    box-shadow: var(--shadow-raised);
+  }
+  .tabbar-item {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-bone-3);
+  }
+  .tabbar-item.is-active {
+    border-color: var(--edge-strong);
+    background-color: var(--fill-glass-knob);
+    background-image: var(--knob-gradient);
+    box-shadow: var(--shadow-knob);
+    color: var(--color-oxide-2);
+  }
+  .tabbar-icon {
+    width: 22px;
+    height: 22px;
+  }
+  /* The classic bar's indicator line. Hidden under glass, where the knob says it. */
+  .tabbar-dot {
+    display: none;
+  }
+
+  /* The summary sheet frosts the page behind it. */
+  .sheet::backdrop {
+    background: oklch(0 0 0 / 0.4);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  /* A bar track, for volume. */
+  .track {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--edge);
+    background-color: var(--fill-inset);
+    box-shadow: var(--shadow-inset);
+  }
+
+  .foot {
+    padding-top: 1.5rem;
+    text-align: center;
+  }
+
+  /* ---- Classic: the original look ------------------------------------- */
+  /* Flat, bordered panels on a plain page. Same roles, none of the material. */
+
+  [data-surface="classic"] .glass,
+  [data-surface="classic"] .glass-raised {
+    border-color: var(--color-line);
+    background-color: var(--color-ink-2);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .glass-raised {
+    border-color: var(--color-line-2);
+    background-color: var(--color-ink-3);
+  }
+  [data-surface="classic"] .glass-inset {
+    border-color: var(--color-line-2);
+    background-color: var(--color-ink);
+    box-shadow: none;
+  }
+  [data-surface="classic"] .glass-knob {
+    border-color: var(--color-line-2);
+    background-color: var(--color-ink-3);
+    background-image: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .glass-accent {
+    border-color: oklch(var(--accent-oklch) / 0.6);
+    background-color: var(--color-ink-3);
+    box-shadow: none;
+  }
+  [data-surface="classic"] .glass-amber {
+    border-color: color-mix(in oklab, var(--color-amber) 60%, transparent);
+    background-color: var(--color-ink-3);
+    box-shadow: none;
+  }
+
+  [data-surface="classic"] .btn-primary {
+    background-image: none;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .btn-ghost {
+    border-color: var(--color-line-2);
+    background-color: transparent;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-ink-3);
+  }
+  [data-surface="classic"] .btn-danger {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .btn-danger:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-oxide-deep) 40%, transparent);
+  }
+  [data-surface="classic"] .btn-subtle:hover:not(:disabled) {
+    background-color: var(--color-ink-3);
+  }
+
+  [data-surface="classic"] .field {
+    border-color: var(--color-line-2);
+    background-color: var(--color-ink);
+    box-shadow: none;
+  }
+  [data-surface="classic"] .field:focus-within,
+  [data-surface="classic"] .field:focus {
+    border-color: var(--color-line-2);
+    box-shadow: none;
+  }
+  [data-surface="classic"] .press:active:not(:disabled) {
+    transform: none;
+  }
+
+  [data-surface="classic"] .seg {
+    border-color: var(--color-line-2);
+    background-color: transparent;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .seg-knob {
+    border: 0;
+    border-radius: 0.25rem;
+    background-color: var(--color-oxide);
+    background-image: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .seg-item {
+    color: var(--color-bone-2);
+  }
+  [data-surface="classic"] .seg-item:hover {
+    color: var(--color-bone);
+  }
+  [data-surface="classic"] .seg-item[data-selected="true"] {
+    color: var(--color-on-accent);
+  }
+
+  [data-surface="classic"] .topbar {
+    align-items: flex-end;
+    border-bottom: 1px solid var(--color-line);
+  }
+  [data-surface="classic"] .topnav {
+    gap: 0.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .topnav-item {
+    border: 0;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+  }
+  [data-surface="classic"] .topnav-item:hover {
+    background-color: var(--color-ink-3);
+  }
+  [data-surface="classic"] .topnav-item.is-active {
+    background-color: var(--color-oxide);
+    background-image: none;
+    box-shadow: none;
+    color: var(--color-on-accent);
+  }
+  [data-surface="classic"] .preset {
+    border-color: var(--color-line);
+    background-color: transparent;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .preset:hover {
+    border-color: var(--color-line-2);
+  }
+  [data-surface="classic"] .preset[aria-pressed="true"] {
+    border-color: var(--color-oxide);
+    background-color: var(--color-ink-3);
+  }
+  [data-surface="classic"] .subnav {
+    gap: 0.75rem;
+  }
+  [data-surface="classic"] .subnav-item,
+  [data-surface="classic"] .subnav-item.is-active {
+    border: 0;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    font-size: 0.75rem;
+    color: var(--color-bone-3);
+  }
+
+  [data-surface="classic"] .tabbar {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--color-line);
+    background-color: color-mix(in oklab, var(--color-ink-2) 95%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  [data-surface="classic"] .tabbar-list {
+    height: 3.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .tabbar-item {
+    gap: 0;
+    border: 0;
+    border-radius: 0;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  [data-surface="classic"] .tabbar-item.is-active {
+    background: none;
+    box-shadow: none;
+  }
+  [data-surface="classic"] .tabbar-icon {
+    display: none;
+  }
+  [data-surface="classic"] .tabbar-dot {
+    display: block;
+    height: 0.25rem;
+    width: 1.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 9999px;
+    background-color: transparent;
+    transition: background-color 0.2s;
+  }
+  [data-surface="classic"] .tabbar-item.is-active .tabbar-dot {
+    background-color: var(--color-oxide);
+  }
+
+  [data-surface="classic"] .floatbar {
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  }
+  [data-surface="classic"] .sheet {
+    border-color: var(--color-line-2);
+    background-color: var(--color-ink-2);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  }
+  [data-surface="classic"] .sheet::backdrop {
+    background: oklch(0 0 0 / 0.6);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  [data-surface="classic"] .track {
+    border: 0;
+    border-radius: 0.125rem;
+    background-color: var(--color-ink);
+    box-shadow: none;
+  }
+  [data-surface="classic"] .foot {
+    border-top: 1px solid var(--color-line);
+    text-align: left;
   }
 }
 
@@ -505,7 +1010,7 @@ input[type="number"] {
   appearance: textfield;
 }
 
-/* The swatch inside a colour picker, rounded to match its capsule. */
+/* The swatch inside a colour picker, rounded to match its field. */
 input[type="color"] {
   -webkit-appearance: none;
   appearance: none;
@@ -516,11 +1021,11 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 }
 input[type="color"]::-webkit-color-swatch {
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
 }
 input[type="color"]::-moz-color-swatch {
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
 }
 
 select.field {
@@ -553,5 +1058,8 @@ select.field {
   .press:active {
     transition: none;
     transform: none;
+  }
+  .seg-knob {
+    transition: none;
   }
 }

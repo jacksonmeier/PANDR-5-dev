@@ -13,7 +13,7 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <div className="reveal mb-7 mt-7 flex flex-col gap-3 sm:mb-9 sm:mt-10">
+    <div className="reveal mb-8 mt-8 flex flex-col gap-3 sm:mb-10 sm:mt-12">
       {eyebrow && <span className="eyebrow">{eyebrow}</span>}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="display text-5xl font-extrabold leading-[0.9] tracking-tight sm:text-7xl">
@@ -45,7 +45,7 @@ export function Card({
   const tones = {
     default: "glass",
     raised: "glass-raised",
-    accent: "glass border-oxide/50 shadow-[0_18px_48px_-18px_var(--color-oxide)]",
+    accent: "glass glass-accent",
   };
   return (
     <section className={`${tones[tone]} ${className}`} style={style}>
@@ -60,15 +60,16 @@ export function Eyebrow({ children, className = "" }: { children: ReactNode; cla
 
 type BtnTone = "primary" | "ghost" | "danger" | "subtle";
 
+/* The looks live in globals.css, where each has a glass and a classic version. */
 const BTN: Record<BtnTone, string> = {
   primary: "btn-primary",
-  ghost: "glass-inset text-bone hover:bg-bone/10",
-  danger: "glass-inset border-oxide/50 text-oxide-2 hover:bg-oxide-deep/50",
-  subtle: "text-bone-2 hover:bg-bone/8 hover:text-bone",
+  ghost: "btn-ghost",
+  danger: "btn-danger",
+  subtle: "btn-subtle",
 };
 
 const BTN_BASE =
-  "display press inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-base font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-40";
+  "display press inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-pill px-(--btn-px) text-base font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-40";
 
 export function Button({
   tone = "primary",
@@ -114,7 +115,7 @@ export function Tag({
   };
   return (
     <span
-      className={`display inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] ${tones[tone]} ${className}`}
+      className={`display inline-flex items-center rounded-pill border px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] ${tones[tone]} ${className}`}
     >
       {children}
     </span>
@@ -131,9 +132,10 @@ export interface SegmentOption<T extends string> {
 }
 
 /**
- * A segmented control: a recessed glass track with a lit knob that slides to
- * the chosen segment. Segments share the width equally so the knob can be
- * placed with arithmetic rather than measurement.
+ * A segmented control: a recessed track with a knob that slides to the chosen
+ * segment. Segments share the width equally so the knob can be placed with
+ * arithmetic rather than measurement. Under glass the knob is lit glass; on the
+ * classic surface it is the accent fill the original tabs had.
  *
  * `role` picks the semantics: a radiogroup for a setting, a tablist for a view.
  */
@@ -165,11 +167,11 @@ export function Segmented<T extends string>({
     <div
       role={role}
       aria-label={label}
-      className={`glass-inset relative grid auto-cols-fr grid-flow-col rounded-full p-1 ${className}`}
+      className={`seg grid auto-cols-fr grid-flow-col ${className}`}
     >
       <span
         aria-hidden
-        className="glass-knob absolute inset-y-1 transition-[left] duration-300 ease-spring"
+        className="seg-knob"
         style={{
           left: `calc(0.25rem + ${index} * (100% - 0.5rem) / ${n})`,
           width: `calc((100% - 0.5rem) / ${n})`,
@@ -184,12 +186,9 @@ export function Segmented<T extends string>({
             role={itemRole}
             aria-checked={itemRole === "radio" ? selected : undefined}
             aria-selected={itemRole === "tab" ? selected : undefined}
+            data-selected={selected}
             onClick={() => onChange(o.value)}
-            className={[
-              "display relative z-10 rounded-full px-3 font-bold uppercase tracking-[0.12em] transition-colors duration-200",
-              height,
-              selected ? "text-bone" : "text-bone-3 hover:text-bone-2",
-            ].join(" ")}
+            className={`seg-item display px-3 font-bold uppercase tracking-[0.12em] ${height}`}
           >
             {o.label}
           </button>

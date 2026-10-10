@@ -43,7 +43,7 @@ export function VolumeBar({
         </span>
       </div>
       <div
-        className={`glass-inset relative w-full overflow-hidden rounded-full ${compact ? "h-2.5" : "h-3.5"}`}
+        className={`track w-full ${compact ? "h-2.5" : "h-3.5"}`}
         role="img"
         aria-label={`${t.name}: ${fmt(value)} of ${fmt(t.total)} effective sets`}
       >
@@ -52,7 +52,7 @@ export function VolumeBar({
           style={{ left: pct(OPTIMAL_RANGE.lo), width: pct(OPTIMAL_RANGE.hi - OPTIMAL_RANGE.lo) }}
           aria-hidden
         />
-        <div className={`absolute inset-y-0 left-0 rounded-full ${tone} transition-[width] duration-500`} style={{ width: pct(value) }} />
+        <div className={`absolute inset-y-0 left-0 rounded-pill ${tone} transition-[width] duration-500`} style={{ width: pct(value) }} />
         {t.total > 0 && (
           <div className="absolute inset-y-0 w-0.5 bg-oxide" style={{ left: pct(t.total) }} aria-hidden />
         )}
@@ -115,8 +115,8 @@ export function GroupOverview({ totals }: { totals: MuscleTotals }) {
             <span className="display text-sm font-bold uppercase tracking-wider text-bone-2">
               {GROUP_NAMES[g]}
             </span>
-            <div className="glass-inset h-2.5 overflow-hidden rounded-full">
-              <div className={`h-full rounded-full ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`} style={{ width: `${pct}%` }} />
+            <div className="track h-2.5">
+              <div className={`h-full rounded-pill ${pct >= 99.9 ? "bg-chalk" : "bg-steel"}`} style={{ width: `${pct}%` }} />
             </div>
             <span className="num text-xs text-bone-2">
               {fmt(sum)}<span className="text-bone-3">/{fmt(target)}</span>

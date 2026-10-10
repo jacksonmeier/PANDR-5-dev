@@ -21,12 +21,13 @@ A self-contained web tracker for the **PANDR-5 model**: a five-day Push / Pull /
 
 ## Theming
 
-Two colours and a mode drive the entire palette:
+Two colours, a mode and a surface drive the entire look:
 
 - **Accent** — buttons, the active tab, the anchor bar. Its hue and chroma are used.
 - **Background tint** — only the hue and saturation are used. The lightness always comes
   from the mode, which is what keeps it a tint rather than a background colour.
 - **Mode** — light, dark, or follow the device.
+- **Surface** — glass (frosted, translucent, the default) or original (flat, bordered).
 
 The palette is built in OKLCH rather than HSL, so a yellow accent and a blue accent at the
 same ladder position read as equally light. A vivid pick is clamped to the sRGB gamut at the
@@ -38,9 +39,19 @@ Implementation: `src/lib/color.ts` (sRGB and OKLCH conversion, gamut clamp), `sr
 `src/app/globals.css`. A small blocking script in `<head>` restores the saved theme before
 first paint, so a light-mode user never sees a frame of the dark default.
 
-### Glass
+### Glass and original
 
-Every surface is frosted glass in the Apple sense: a translucent fill over a soft, colourful
+Under **Settings → Appearance → Surface** the app switches between two materials. The
+setting rides the same pre-paint path as light and dark: the blocking script in `<head>`
+sets `data-surface` on `<html>` before the first frame, and the two looks are CSS only, so
+a page rendered on the server comes up in the right one with no flash. The rule that makes
+the switch possible: anything that differs between the two lives in a token (the radii, the
+fills) or in a role class (`.glass`, `.btn-ghost`, `.tabbar`, ...), never in a utility
+class on the element. The glass rules come first; a `[data-surface="classic"]` block at the
+end of the components layer overrides them with the original flat, bordered panels, the
+full-width bottom bar with its indicator line, and the accent-filled tabs.
+
+Under glass, every surface is frosted in the Apple sense: a translucent fill over a soft, colourful
 scene, blurred and saturated through `backdrop-filter`, with a hairline edge, a specular
 highlight along the top and a diffuse shadow underneath. The scene behind it (`.scene` in the
 layout) is four radial orbs drawn from the accent and tint hues, fixed in place, so the glass

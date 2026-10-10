@@ -48,12 +48,12 @@ export function Stepper({
       : "h-9 w-11 text-lg";
 
   return (
-    <div className={`field inline-flex shrink-0 items-stretch overflow-hidden rounded-full p-0.5 ${className}`}>
+    <div className={`field inline-flex shrink-0 items-stretch overflow-hidden p-0.5 ${className}`}>
       <button
         type="button"
         aria-label={`Decrease ${label}`}
         onClick={dec}
-        className={`display press shrink-0 rounded-full font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
+        className={`display press shrink-0 rounded-pill font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
       >
         −
       </button>
@@ -87,7 +87,7 @@ export function Stepper({
         type="button"
         aria-label={`Increase ${label}`}
         onClick={inc}
-        className={`display press shrink-0 rounded-full font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
+        className={`display press shrink-0 rounded-pill font-bold text-bone-2 hover:bg-bone/10 hover:text-bone active:bg-bone/15 ${btn}`}
       >
         +
       </button>

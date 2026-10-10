@@ -35,7 +35,7 @@ export function ActiveSessionBanner() {
     <div className="sticky top-[calc(env(safe-area-inset-top)+0.5rem)] z-40 mt-3">
       <Link
         href={href}
-        className="glass-raised press flex items-center justify-between gap-3 rounded-full border-amber/60 bg-amber-deep/70 px-4 py-2.5 hover:border-amber"
+        className="glass-raised press flex items-center justify-between gap-3 rounded-pill border-amber/60 bg-amber-deep/70 px-4 py-2.5 hover:border-amber"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber" aria-hidden />

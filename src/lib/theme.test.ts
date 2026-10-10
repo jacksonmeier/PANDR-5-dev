@@ -6,6 +6,7 @@ import {
   accentSwatch,
   paintCache,
   resolveMode,
+  resolveSurface,
   surfaceSwatch,
   themeColorHex,
   themeVars,
@@ -126,7 +127,23 @@ describe("swatches", () => {
   });
 });
 
+describe("resolveSurface", () => {
+  it("defaults to glass, including for a theme saved before the switch existed", () => {
+    expect(resolveSurface(DEFAULT_THEME)).toBe("glass");
+    expect(resolveSurface({})).toBe("glass");
+    expect(resolveSurface({ surface: "glass" })).toBe("glass");
+  });
+  it("honours classic", () => {
+    expect(resolveSurface({ surface: "classic" })).toBe("classic");
+  });
+});
+
 describe("paintCache", () => {
+  it("carries the surface so the pre-paint script can restore it", () => {
+    expect(paintCache(DEFAULT_THEME).s).toBe("glass");
+    expect(paintCache({ ...DEFAULT_THEME, surface: "classic" }).s).toBe("classic");
+  });
+
   it("is plain JSON numbers so the pre-paint script needs no colour maths", () => {
     const c = paintCache(DEFAULT_THEME);
     expect(JSON.parse(JSON.stringify(c))).toEqual(c);

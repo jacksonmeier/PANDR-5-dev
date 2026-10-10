@@ -80,7 +80,7 @@ export function Nav() {
 
   return (
     <>
-      <header className="flex items-center justify-between gap-6 py-5">
+      <header className="topbar">
         <Link href="/" className="group flex items-baseline gap-2">
           <span className="display text-3xl font-extrabold leading-none tracking-tight text-bone">
             PANDR<span className="text-oxide">-5</span>
@@ -88,8 +88,9 @@ export function Nav() {
           <span className="num text-[10px] text-bone-3">v{PROGRAM_VERSION}</span>
         </Link>
 
-        {/* Desktop: one glass capsule holding every destination. */}
-        <nav className="glass hidden items-center gap-0.5 rounded-full p-1 sm:flex" aria-label="Primary">
+        {/* Desktop: every destination in one row. The look (a glass capsule, or
+            the original bare links) is the surface's, in globals.css. */}
+        <nav className="topnav hidden items-center sm:flex" aria-label="Primary">
           {[...PRIMARY, ...SECONDARY].map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -97,12 +98,7 @@ export function Nav() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={[
-                  "display press rounded-full px-3.5 py-2 text-sm font-bold uppercase tracking-[0.14em]",
-                  active
-                    ? "glass-knob text-oxide-2"
-                    : "text-bone-2 hover:bg-bone/8 hover:text-bone",
-                ].join(" ")}
+                className={`topnav-item display press ${active ? "is-active" : ""}`}
               >
                 {item.label}
               </Link>
@@ -110,8 +106,8 @@ export function Nav() {
           })}
         </nav>
 
-        {/* Phone: the two reading pages, as small pills. The rest live in the tab bar. */}
-        <nav className="flex gap-1.5 sm:hidden" aria-label="Secondary">
+        {/* Phone: the two reading pages beside the wordmark. The rest live in the tab bar. */}
+        <nav className="subnav flex sm:hidden" aria-label="Secondary">
           {SECONDARY.map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -119,10 +115,7 @@ export function Nav() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={[
-                  "display press rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em]",
-                  active ? "glass-knob text-oxide-2" : "glass-inset text-bone-2",
-                ].join(" ")}
+                className={`subnav-item display press ${active ? "is-active" : ""}`}
               >
                 {item.label}
               </Link>
@@ -131,12 +124,10 @@ export function Nav() {
         </nav>
       </header>
 
-      {/* Phone: a floating glass tab bar, inset from the edges like iOS. */}
-      <nav
-        aria-label="Primary"
-        className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 sm:hidden"
-      >
-        <ul className="glass-raised grid h-[3.75rem] grid-cols-5 rounded-full p-1">
+      {/* Phone tab bar. Under glass it floats, inset from the edges, with icons;
+          on the classic surface it sits on the page edge with an indicator line. */}
+      <nav aria-label="Primary" className="tabbar sm:hidden">
+        <ul className="tabbar-list">
           {PRIMARY.map((item) => {
             const active = isActive(pathname, item.href);
             return (
@@ -144,12 +135,10 @@ export function Nav() {
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={[
-                    "display press flex h-full flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.12em]",
-                    active ? "glass-knob text-oxide-2" : "text-bone-3",
-                  ].join(" ")}
+                  className={`tabbar-item display press ${active ? "is-active" : ""}`}
                 >
-                  <Icon name={item.icon} className="h-[22px] w-[22px]" />
+                  <span className="tabbar-dot" aria-hidden />
+                  <Icon name={item.icon} className="tabbar-icon" />
                   <span className="leading-none">{item.label}</span>
                 </Link>
               </li>

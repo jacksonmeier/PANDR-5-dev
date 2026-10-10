@@ -184,7 +184,7 @@ export function SettingsScreen() {
       </div>
 
       {message && (
-        <p role="status" className="glass mt-4 rounded-full px-5 py-2.5 text-sm text-bone-2">
+        <p role="status" className="glass mt-4 rounded-pill px-5 py-2.5 text-sm text-bone-2">
           {message}
         </p>
       )}

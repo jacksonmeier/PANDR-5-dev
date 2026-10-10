@@ -141,7 +141,7 @@ function InProgressCard() {
   const day = getDay(active.dayId);
   const done = loggedSetCount(active.logs);
   return (
-    <Card tone="accent" className="mb-3 border-amber/60 p-4 shadow-[0_18px_48px_-18px_var(--color-amber)]">
+    <Card className="glass-amber mb-3 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -237,12 +237,12 @@ function SessionCard({
             <Eyebrow>Brackets mark the anchor set</Eyebrow>
             <div className="flex gap-2">
               {day?.kind === "training" && (
-                <Link
+                <LinkButton
+                  tone="ghost"
                   href={`/workout/${session.dayId}/?session=${encodeURIComponent(session.id)}`}
-                  className="glass-inset display press inline-flex min-h-11 items-center rounded-full px-5 text-base font-bold uppercase tracking-[0.12em] text-bone hover:bg-bone/10"
                 >
                   Edit
-                </Link>
+                </LinkButton>
               )}
               <Button tone="danger" onClick={onDelete}>
                 Delete

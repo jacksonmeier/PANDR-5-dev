@@ -90,7 +90,7 @@ export default function RootLayout({
           <Nav />
           <ActiveSessionBanner />
           <main className="flex-1">{children}</main>
-          <footer className="mt-16 pt-6 text-center text-xs text-bone-3">
+          <footer className="foot mt-16 text-xs text-bone-3">
             <p>
               PANDR-5 v1.1.1. An experimental model. Not medical advice. Data stays in this
               browser.

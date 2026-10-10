@@ -13,7 +13,7 @@ export function Cited({ text, className = "" }: { text: string; className?: stri
           <Link
             key={i}
             href={`/research/#ref-${m[1]}`}
-            className="num mx-0.5 rounded-full border border-steel/30 bg-steel-deep/60 px-1.5 text-[0.8em] text-steel transition-colors hover:bg-steel-deep"
+            className="num mx-0.5 rounded-pill border border-steel/30 bg-steel-deep/60 px-1.5 text-[0.8em] text-steel transition-colors hover:bg-steel-deep"
           >
             {m[1]}
           </Link>

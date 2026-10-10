@@ -70,7 +70,7 @@ export function WorkoutSummary({
         if (e.target === e.currentTarget) onClose();
       }}
       aria-labelledby="workout-summary-title"
-      className="glass-raised m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden p-0 text-bone backdrop:bg-black/40 backdrop:backdrop-blur-md open:flex"
+      className="glass-raised sheet m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden p-0 text-bone open:flex"
     >
       <header className="flex items-start justify-between gap-3 border-b border-bone/8 px-4 py-3.5">
         <div className="min-w-0">
@@ -88,7 +88,7 @@ export function WorkoutSummary({
           type="button"
           onClick={onClose}
           aria-label="Close summary"
-          className="glass-inset press flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-bone-2 hover:bg-bone/10 hover:text-bone"
+          className="btn-ghost press flex h-9 w-9 shrink-0 items-center justify-center rounded-pill text-bone-2 hover:text-bone"
         >
           <span aria-hidden>✕</span>
         </button>
@@ -196,7 +196,7 @@ function MoveButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="glass-inset press flex h-9 w-9 items-center justify-center rounded-full text-base text-bone-2 hover:bg-bone/10 hover:text-bone disabled:cursor-not-allowed disabled:text-bone-3 disabled:opacity-40"
+      className="btn-ghost press flex h-9 w-9 items-center justify-center rounded-pill text-base text-bone-2 hover:text-bone disabled:cursor-not-allowed disabled:text-bone-3 disabled:opacity-40"
     >
       <span aria-hidden>{glyph}</span>
     </button>

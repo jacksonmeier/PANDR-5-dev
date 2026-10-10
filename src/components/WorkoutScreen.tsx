@@ -331,7 +331,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
       ) : (
         <div className="grid gap-3">
           {customOrder && (
-            <div className="glass flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-full px-4 py-2">
+            <div className="glass flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-pill px-4 py-2">
               <p className="text-xs text-bone-2">
                 Reordered for this session. The next {shortLabel} starts in program order.
               </p>
@@ -364,10 +364,10 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
         </div>
       )}
 
-      <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 mt-4 sm:bottom-4">
+      <div className="sticky bottom-[calc(var(--tabbar-clear)+env(safe-area-inset-bottom))] z-20 mt-4 sm:bottom-4">
         <Card
           tone="raised"
-          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3"
+          className="floatbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3"
         >
           <div className="flex min-w-0 flex-1 basis-64 items-center justify-between gap-4">
             <div className="flex min-w-0 flex-1 flex-col">
@@ -410,7 +410,7 @@ export function WorkoutScreen({ day }: { day: TrainingDayId }) {
                 onClick={() => setRestFrom(Date.now())}
                 aria-label="Restart the rest timer"
                 title="Restart the rest timer"
-                className="glass-inset press flex shrink-0 flex-col items-end rounded-well px-3 py-1.5 text-right hover:bg-bone/8"
+                className="btn-ghost press flex shrink-0 flex-col items-end rounded-well px-3 py-1.5 text-right"
               >
                 <span className="eyebrow">Rest ↻</span>
                 <span className="num text-2xl font-semibold leading-tight text-bone">
