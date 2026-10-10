@@ -78,7 +78,16 @@ export function HomeScreen() {
 
       <DayStrip
         status={status}
-        hrefFor={(id) => (getDay(id)?.kind === "training" ? `/workout/${id}/` : null)}
+        hrefFor={(id) => {
+          if (getDay(id)?.kind !== "training") return null;
+          // A finished day opens the session that was logged, not a blank one.
+          // The live day keeps the plain link so it resumes.
+          const finished =
+            status[id] === "done" ? cycle.filter((s) => s.dayId === id).pop() : undefined;
+          return finished
+            ? `/workout/${id}/?session=${encodeURIComponent(finished.id)}`
+            : `/workout/${id}/`;
+        }}
       />
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
